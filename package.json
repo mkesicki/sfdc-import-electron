@@ -1,0 +1,32 @@
+{
+  "name": "sfdc-import-electron",
+  "version": "1.0.0",
+  "description": "Electron application to import data to Salesforce.",
+  "main": "frontend/main.js",
+  "scripts": {
+    "test": "test",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkesicki/sfdc-import-electron.git"
+  },
+  "keywords": [
+    "Electron",
+    "Salesforce",
+    "Salesforce Import",
+    "C#"
+  ],
+  "author": "Michal Kesicki",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mkesicki/sfdc-import-electron/issues"
+  },
+  "homepage": "https://github.com/mkesicki/sfdc-import-electron#readme",
+  "devDependencies": {
+    "electron": "^8.2.3"
+  },
+  "dependencies": {
+    "electron-cgi": "^1.0.4"
+  }
+}
