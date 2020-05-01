@@ -3,11 +3,81 @@
 <head>
     <meta charset="utf-8" />
     <title>Electron application to import data to Salesforce with C# backend</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script>
+        const querystring = require('querystring');
+        let query = querystring.parse(global.location.search);
+        let data = JSON.parse(query['?data'])
+        let styleFile;
+        if (data.darkMode) {
+            styleFile = "dark.css";
+        } else {
+            styleFile = "light.css";
+        }
+        var element = document.createElement("link");
+        element.setAttribute("rel", "stylesheet");
+        element.setAttribute("type", "text/css");
+        element.setAttribute("href", styleFile);
+        document.getElementsByTagName("head")[0].appendChild(element);
+    </script>
 </head>
 <body>
-    <div>Come on!!!</div>
+    <div id="login-form">
+        <div class="title">Login to Salesforce</div>
+        <form>
+            <div><label>Username: <input id="username" name="username" required="required" /></label></div>
+            <div><label>Password: <input id="password" name="password" type="password" /></label></div>
+            <div><label>Client Id: <input id="client_id" name="client_id" required="required" /></label></div>
+            <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required="required" /></label></div>
+            <div><label>
+                    Login to:
+                     <select id="login_url" name="org" required="required">
+                         <option value="">--Select--</option>
+                         <option value="https://test.login.salesforce.com">Sandbox</option>
+                         <option value="https://login.salesforce.com">Production</option>
+                     </select>
+                </label>    
+            </div>
+            <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse"></input></label></div>
+            <div><input type="button" value="Login" id="btn-login" /></div>
+        </form>
+
+    </div>
+    <script src="connection.js"></script>
     <script>
-        require('./connection.js')
+        //require('./connection.js')
+
+        document.getElementById("btn-login").addEventListener("click", function () {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let client_id = document.getElementById("client_id").value;
+            let client_secret = document.getElementById("client_secret").value;
+            let login_url = document.getElementById("login_url").value;
+            let file_to_parse = document.getElementById("file_to_parse").files[0].name; 
+            let data = [];
+
+            data[0] = username;
+            data[1] = password;
+            data[2] = client_id;
+            data[3] = client_secret;
+            data[4] = login_url;
+            data[5] = file_to_parse;
+
+            //let username = document.getElementById("username").value;
+            console.log(data);
+            connection.send("login", JSON.stringify(data), (err, response) => {
+
+                if (err) {
+                    console.log("Login error occured!");
+                    console.error(err.Message);
+                }
+
+                console.log(response);
+                //connection.close();
+            });
+
+        })
     </script>
 </body>
 </html>

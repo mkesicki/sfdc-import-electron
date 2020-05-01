@@ -8,8 +8,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D18CCC44-6FF7-4C7B-AD90-2B353676E860}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\frontend\connection.js = ..\..\frontend\connection.js
+		..\..\frontend\dark.css = ..\..\frontend\dark.css
 		..\..\frontend\index.html = ..\..\frontend\index.html
+		..\..\frontend\light.css = ..\..\frontend\light.css
+		..\..\frontend\main.css = ..\..\frontend\main.css
 		..\..\frontend\main.js = ..\..\frontend\main.js
+		..\..\README.md = ..\..\README.md
+		Salesforce\Salesforce.cs = Salesforce\Salesforce.cs
 	EndProjectSection
 EndProject
 Global

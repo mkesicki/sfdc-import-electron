@@ -359,3 +359,6 @@ ClientBin/
 *.publishsettings
 node_modules/
 orleans.codegen.cs
+tmp
+results
+logs

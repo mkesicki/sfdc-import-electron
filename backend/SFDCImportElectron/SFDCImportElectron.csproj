@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="ElectronCgi.DotNet" Version="1.0.1" />
+    <PackageReference Include="RestSharp" Version="106.10.2-alpha.0.8" />
+    <PackageReference Include="ShellProgressBar" Version="5.0.0" />
   </ItemGroup>
 
 </Project>
