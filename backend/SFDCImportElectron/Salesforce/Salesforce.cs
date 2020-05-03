@@ -113,6 +113,30 @@ namespace SFDCImportElectron.Salesforce
             throw new ApplicationException("Error getting object Metadata");
         }
 
+        public Dictionary<String, String> RetrieveObjects()
+        {
+            RestRequest request = new RestRequest(InstanceUrl + "/services/data/" + ApiVersion + "/sobjects", Method.GET);
+            request.AddHeader("Authorization", Token);
+
+            IRestResponse response = Client.Execute(request);
+
+            Dictionary<String, String> sobjectsList = new Dictionary<String, String>();
+
+            if (HttpStatusCode.OK == response.StatusCode)
+            {
+                RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
+                //Console.WriteLine(response.Content);
+                MetadataSobject sobjects = deserializer.Deserialize<MetadataSobject>(response);
+
+                foreach (Sobject sobject in sobjects.Sobjects)
+                {
+                    sobjectsList.Add(sobject.Name, sobject.Label);
+                }
+            }
+
+            return sobjectsList;
+        }
+
         public void PrintPayload(List<ObjectPayload> Payload)
         {
             foreach (ObjectPayload obj in Payload)

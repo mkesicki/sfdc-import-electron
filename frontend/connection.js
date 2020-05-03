@@ -11,10 +11,11 @@ connection.onDisconnect = () => {
     console.log("lost");
 };
 
-function abc() {
-    alert('dasdas@!');
-}
+function log(message) {
 
+    logArea = document.getElementById("log-messages");
+    logArea.value = logArea.value + "\n" + message;
+}
 //connection.send("greeting", "Mom", (err, response) => {
 //    console.log(response);
 //    //connection.close();

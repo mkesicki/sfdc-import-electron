@@ -4,20 +4,25 @@ using System.IO;
 using Newtonsoft.Json;
 using SFDCImportElectron.Logger;
 using SFDCImportElectron.Parser;
+using System.Collections.Generic;
 
 namespace SFDCImportElectron
 {
+
+    //class public 
     class Program
     {
+
+        static Salesforce.Salesforce SFDC;
+
         static void Main()
-        {
+        {          
             var connection = new ConnectionBuilder()
                                 .WithLogging()
                                 .Build();
 
             // expects a request named "greeting" with a string argument and returns a string
             connection.On<string, string>("login", data  =>
-
             {
                 /**
              * client_id
@@ -67,22 +72,32 @@ namespace SFDCImportElectron
 
                 FileLogger Logger = new FileLogger("logs");
 
-                Salesforce.Salesforce SFDC = new Salesforce.Salesforce(ClientID, ClientSecret, Username, Password, LoginUrl, Logger);
+                SFDC = new Salesforce.Salesforce(ClientID, ClientSecret, Username, Password, LoginUrl, Logger);
+                RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
 
-                //CSVThread parser = new CSVThread(csv, Logger, SFDC);
+                CSVThread parser = new CSVThread(csv, Logger, SFDC);
 
-                //Console.WriteLine("instance wtf : {0}", SFDC.InstanceUrl);
+                //return "{\"message\":\"Logged to salesforce instance: " + SFDC.InstanceUrl + "\", \"connection\":\"" + serializer.Serialize(SFDC) + "\"}";
 
                 return $"Logged to salesforce instance: {SFDC.InstanceUrl}";
             });
 
-            // wait for incoming requests
-            connection.Listen();
+            connection.On<string>("getSFDCObjects", () =>
+
+            {
+                Dictionary<String, String> sobjects = SFDC.RetrieveObjects();
+
+                RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
+                return serializer.Serialize(sobjects);
+            });
+
+                // wait for incoming requests
+                connection.Listen();
         }
 
         private static String Help()
         {
-            return new String("SFDC Import is a simple console app to insert objects in Salesforce from CSV file. \n" +
+            return new String("SFDC Import is a simple electron app to insert objects in Salesforce from CSV file. \n" +
                 "It creates object with realations and is parsing file with threads \n" +
                 "Was creted for learn and fun but the idea of creating parent and child object in one call might \n" +
                 "be useful in real case scenarios \n\n" +

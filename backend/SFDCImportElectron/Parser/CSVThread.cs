@@ -55,7 +55,7 @@ namespace SFDCImportElectron.Parser
             CSV = new StreamReader(Path);
             Size = File.ReadLines(Path).Count() - 1; //do not count header file
 
-            Console.WriteLine("Number of rows to process:  {0}", Size);
+            //Console.WriteLine("Number of rows to process:  {0}", Size);
 
             //get Header
             sfdcs.Add(Sfdc);
@@ -137,7 +137,7 @@ namespace SFDCImportElectron.Parser
                 if (count == Cores) { loop = false; }
             }
 
-            StatusBar.Dispose();
+            //StatusBar.Dispose();
 
             return;
         }

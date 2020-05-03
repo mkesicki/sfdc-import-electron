@@ -58,7 +58,7 @@ namespace SFDCImportElectron.Logger
                 return;
             }
 
-            Console.WriteLine("Store log: {0} entries", logs.Count);
+            //Console.WriteLine("Store log: {0} entries", logs.Count);
             foreach (LogMessage msg in logs.GetConsumingEnumerable())
             {
                 File.AppendAllText(msg.Filepath, msg.Text);

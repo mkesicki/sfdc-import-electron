@@ -9,6 +9,6 @@ Any validation of data might be nice to have :)
 Add Drag & Drop for file
 Add some spinner etc to show that work is in progress
 Think about some progress bar
-
-
+If you see any login data in code there are for trailhead ...
+Add searching to list of objects 
 

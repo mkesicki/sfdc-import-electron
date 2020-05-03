@@ -76,12 +76,12 @@ namespace SFDCImportElectron.Model
         public bool writeRequiresMasterRead { get; set; }
     }
 
-    public class Urls
+    public partial class Urls
     {
         public string layout { get; set; }
     }
 
-    public class RecordTypeInfo
+    public partial class RecordTypeInfo
     {
         public bool active { get; set; }
         public bool available { get; set; }

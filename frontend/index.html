@@ -23,32 +23,63 @@
     </script>
 </head>
 <body>
-    <div id="login-form">
+    <div id="spinner" class="hide"></div>
+    <div id="login-form-container">
         <div class="title">Login to Salesforce</div>
-        <form>
-            <div><label>Username: <input id="username" name="username" required="required" /></label></div>
-            <div><label>Password: <input id="password" name="password" type="password" /></label></div>
-            <div><label>Client Id: <input id="client_id" name="client_id" required="required" /></label></div>
-            <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required="required" /></label></div>
+        <form id="login-form">
+            <div><label>Username: <input id="username" name="username" required /></label></div>
+            <div><label>Password: <input id="password" name="password" type="password" required/></label></div>
+            <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
+            <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required /></label></div>
             <div><label>
                     Login to:
-                     <select id="login_url" name="org" required="required">
+                     <select id="login_url" name="org" required>
                          <option value="">--Select--</option>
                          <option value="https://test.login.salesforce.com">Sandbox</option>
-                         <option value="https://login.salesforce.com">Production</option>
+                         <option value="https://login.salesforce.com" >Production</option>
                      </select>
                 </label>    
             </div>
-            <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse"></input></label></div>
+            <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required></input></label></div>
             <div><input type="button" value="Login" id="btn-login" /></div>
         </form>
+    </div>
+    <div id="log">
+        <textarea id="log-messages" style="width:100%; height:100%;margin-top:10px;min-height:100px;"></textarea>
 
     </div>
     <script src="connection.js"></script>
     <script>
         //require('./connection.js')
 
+        log("Welcome, let's rock together!");
         document.getElementById("btn-login").addEventListener("click", function () {
+
+            let form = document.getElementById("login-form");
+            if (form.checkValidity() === false) {
+                
+                for (var i = 0; i < form.elements.length; i++) {
+                    input = form.elements[i];
+                    console.log(input.checkValidity());
+
+                    if (input.checkValidity() === false) {
+                        console.info(input.validationMessage);
+                        input.classList.add('error');
+                        //input.classList.toggle('invalid');
+                        input.setCustomValidity(input.validationMessage);
+                    }
+                }
+
+                //form has error do not send it
+                return;
+            }
+
+            log("Login to salesforce...")
+
+            //document.getElementById("login-form-container").classList.add("hide");
+            document.getElementById("spinner").classList.remove("hide");
+            document.getElementById("spinner").classList.add("spinner");
+
             let username = document.getElementById("username").value;
             let password = document.getElementById("password").value;
             let client_id = document.getElementById("client_id").value;
@@ -65,15 +96,36 @@
             data[5] = file_to_parse;
 
             //let username = document.getElementById("username").value;
-            console.log(data);
             connection.send("login", JSON.stringify(data), (err, response) => {
 
                 if (err) {
-                    console.log("Login error occured!");
-                    console.error(err.Message);
+                    log("Something very bad happen!");
+                    log(err.Message);
+                    console.error(err);
                 }
 
                 console.log(response);
+                log(response);
+
+                //document.getElementById("login-form-container").classList.remove("hide");
+                //document.getElementById("login-form-container").classList.add("show");
+                document.getElementById("spinner").classList.remove("spinner");
+                document.getElementById("spinner").classList.add("hide");
+
+                log("Get salesforce objects");
+
+                connection.send("getSFDCObjects", (err, response) => {
+
+                    if (err) {
+                        log("Something very bad happen!");
+                        log(err.Message);
+                        console.error(err);
+                    }
+
+                    console.log(response);
+                    log("List of objects retrieved...");
+                });
+                
                 //connection.close();
             });
 
