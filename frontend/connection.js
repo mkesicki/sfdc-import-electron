@@ -25,8 +25,32 @@ function parseObjectsList(sfdcObjects) {
     for (let i = 0; i < data.length; i++) {
 
         var newdiv = document.createElement('div');
-        newdiv.innerHTML = "<label><input type='checkbox' name='sfdcObjects[]' value='" + data[i].Name + "' >" + data[i].Label + "<label>";
+        newdiv.innerHTML = "<label><input type='checkbox' class='checkbox' name='sfdcObjects[]' value='" + data[i].Name + "' >" + data[i].Label + "<label>";
         form.appendChild(newdiv);
     }
 }
 
+
+function search(query) {
+
+    query = query.toLowerCase();
+
+    document.querySelectorAll(".checkbox").forEach(function (input) {
+
+        if (query === "--show-all") {
+            input.parentElement.classList.remove("hide");
+            input.parentElement.classList.remove("show");
+            input.parentElement.classList.add("show");
+        } else if (input.value.toLowerCase().includes(query)) {
+
+            input.parentElement.classList.remove("hide");
+            input.parentElement.classList.remove("show");
+            input.parentElement.classList.add("show");
+
+        } else {
+            input.parentElement.classList.remove("hide");
+            input.parentElement.classList.remove("show");
+            input.parentElement.classList.add("hide");
+        }
+    });
+}

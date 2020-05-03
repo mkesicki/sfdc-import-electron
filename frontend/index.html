@@ -42,7 +42,7 @@
                         </select>
                     </label>
                 </div>
-                <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required></input></label></div>
+                <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required /></label></div>
                 <div><input type="button" value="Login" id="btn-login" /></div>
             </form>
         </div>
@@ -69,7 +69,7 @@
                     if (input.checkValidity() === false) {
                         console.info(input.validationMessage);
                         input.classList.add('error');
-                        input.setCustomValidity(input.validationMessage);
+                        //input.setCustomValidity(input.validationMessage);
                     }
                 }
 
@@ -128,14 +128,28 @@
                     fs.readFile('frontend/list.html', (err, data) => {
                         document.getElementById('main-container').innerHTML = data
                         parseObjectsList(sfdcObjects);
+
+                        document.getElementById("sfdc-objects-search-box").addEventListener("change", function () {
+                            let value = this.value;
+
+                            if (value.length > 0 && value.length < 3) {
+
+
+                            } else if (value.length == 1) {
+
+                                //reset all
+                                search("--show-all");
+                            } else {
+
+                                //filter
+                                search(value);
+                            }
+                        });
                     })
                 });
-
-               
                 
                 //connection.close();
             });
-
         })
     </script>
 </body>
