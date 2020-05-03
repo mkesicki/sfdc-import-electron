@@ -10,5 +10,6 @@ Add Drag & Drop for file
 Add some spinner etc to show that work is in progress
 Think about some progress bar
 If you see any login data in code there are for trailhead ...
-Add searching to list of objects 
+Add searching to list of objects
+Block the form(s) when spinner is .... spinning :)
 

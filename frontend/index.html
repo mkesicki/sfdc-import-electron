@@ -24,26 +24,31 @@
 </head>
 <body>
     <div id="spinner" class="hide"></div>
-    <div id="login-form-container">
-        <div class="title">Login to Salesforce</div>
-        <form id="login-form">
-            <div><label>Username: <input id="username" name="username" required /></label></div>
-            <div><label>Password: <input id="password" name="password" type="password" required/></label></div>
-            <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
-            <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required /></label></div>
-            <div><label>
-                    Login to:
-                     <select id="login_url" name="org" required>
-                         <option value="">--Select--</option>
-                         <option value="https://test.login.salesforce.com">Sandbox</option>
-                         <option value="https://login.salesforce.com" >Production</option>
-                     </select>
-                </label>    
-            </div>
-            <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required></input></label></div>
-            <div><input type="button" value="Login" id="btn-login" /></div>
-        </form>
+    <div id="main-container">
+        <div id="login-form-container">
+            <div class="title">Login to Salesforce</div>
+            <form id="login-form">
+                <div><label>Username: <input id="username" name="username" required /></label></div>
+                <div><label>Password: <input id="password" name="password" type="password" required /></label></div>
+                <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
+                <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required /></label></div>
+                <div>
+                    <label>
+                        Login to:
+                        <select id="login_url" name="org" required>
+                            <option value="">--Select--</option>
+                            <option value="https://test.login.salesforce.com">Sandbox</option>
+                            <option value="https://login.salesforce.com" >Production</option>
+                        </select>
+                    </label>
+                </div>
+                <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required></input></label></div>
+                <div><input type="button" value="Login" id="btn-login" /></div>
+            </form>
+        </div>
     </div>
+
+
     <div id="log">
         <textarea id="log-messages" style="width:100%; height:100%;margin-top:10px;min-height:100px;"></textarea>
 
@@ -60,12 +65,10 @@
                 
                 for (var i = 0; i < form.elements.length; i++) {
                     input = form.elements[i];
-                    console.log(input.checkValidity());
 
                     if (input.checkValidity() === false) {
                         console.info(input.validationMessage);
                         input.classList.add('error');
-                        //input.classList.toggle('invalid');
                         input.setCustomValidity(input.validationMessage);
                     }
                 }
@@ -76,7 +79,6 @@
 
             log("Login to salesforce...")
 
-            //document.getElementById("login-form-container").classList.add("hide");
             document.getElementById("spinner").classList.remove("hide");
             document.getElementById("spinner").classList.add("spinner");
 
@@ -107,8 +109,6 @@
                 console.log(response);
                 log(response);
 
-                //document.getElementById("login-form-container").classList.remove("hide");
-                //document.getElementById("login-form-container").classList.add("show");
                 document.getElementById("spinner").classList.remove("spinner");
                 document.getElementById("spinner").classList.add("hide");
 
@@ -121,10 +121,17 @@
                         log(err.Message);
                         console.error(err);
                     }
-
-                    console.log(response);
+                    let sfdcObjects = response;
+                    //console.log(sfdcObjects);
                     log("List of objects retrieved...");
+
+                    fs.readFile('frontend/list.html', (err, data) => {
+                        document.getElementById('main-container').innerHTML = data
+                        parseObjectsList(sfdcObjects);
+                    })
                 });
+
+               
                 
                 //connection.close();
             });

@@ -113,14 +113,14 @@ namespace SFDCImportElectron.Salesforce
             throw new ApplicationException("Error getting object Metadata");
         }
 
-        public Dictionary<String, String> RetrieveObjects()
+        public List<Sobject> RetrieveObjects()
         {
             RestRequest request = new RestRequest(InstanceUrl + "/services/data/" + ApiVersion + "/sobjects", Method.GET);
             request.AddHeader("Authorization", Token);
 
             IRestResponse response = Client.Execute(request);
 
-            Dictionary<String, String> sobjectsList = new Dictionary<String, String>();
+            List<Sobject> objects = new List<Sobject>();
 
             if (HttpStatusCode.OK == response.StatusCode)
             {
@@ -128,13 +128,11 @@ namespace SFDCImportElectron.Salesforce
                 //Console.WriteLine(response.Content);
                 MetadataSobject sobjects = deserializer.Deserialize<MetadataSobject>(response);
 
-                foreach (Sobject sobject in sobjects.Sobjects)
-                {
-                    sobjectsList.Add(sobject.Name, sobject.Label);
-                }
+                objects = sobjects.Sobjects;
+
             }
 
-            return sobjectsList;
+            return objects;
         }
 
         public void PrintPayload(List<ObjectPayload> Payload)

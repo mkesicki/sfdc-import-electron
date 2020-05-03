@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using SFDCImportElectron.Logger;
 using SFDCImportElectron.Parser;
 using System.Collections.Generic;
+using SFDCImportElectron.Model;
 
 namespace SFDCImportElectron
 {
@@ -83,16 +84,15 @@ namespace SFDCImportElectron
             });
 
             connection.On<string>("getSFDCObjects", () =>
-
             {
-                Dictionary<String, String> sobjects = SFDC.RetrieveObjects();
+                List<Sobject> sobjects = SFDC.RetrieveObjects();
 
                 RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
                 return serializer.Serialize(sobjects);
             });
 
-                // wait for incoming requests
-                connection.Listen();
+            // wait for incoming requests
+            connection.Listen();
         }
 
         private static String Help()
