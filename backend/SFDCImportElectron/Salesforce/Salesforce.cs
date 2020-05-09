@@ -64,8 +64,6 @@ namespace SFDCImportElectron.Salesforce
         public void Login()
         {
 
-            //Console.WriteLine("Login to salesforce: " + LoginUrl);
-
             Client = new RestClient(LoginUrl);
 
             RestRequest request = new RestRequest(LoginUrl + "/services/oauth2/token", Method.POST);
@@ -133,32 +131,10 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public void PrintPayload(List<ObjectPayload> Payload)
-        {
-            foreach (ObjectPayload obj in Payload)
-            {
-                ////Console.WriteLine("payload object {0}", obj.Name);
-                foreach (KeyValuePair<string, object> entry in obj.Fields)
-                {
-                    ////Console.WriteLine("field  {0} : {1}: ref {2}", entry.Key, entry.Value, obj.Reference);
-                    foreach (var child in obj.Children)
-                    {
-                        ////Console.WriteLine("Child object: {0}", child.Name);
-                        foreach (KeyValuePair<string, object> field in child.Fields)
-                        {
-                            ////Console.WriteLine("field  {0} : {1}: ref {2}", field.Key, field.Value.ToString(), child.Reference);
-                        }
-                    }
-                }
-            }
-        }
-
         public void PreparePayload(Dictionary<string, List<string>> Relations, Dictionary<string, List<string>> Header, String[] data, int referenceNumber)
         {
-            ////Console.WriteLine("REF#"+referenceNumber);
             List<ObjectPayload> Children = new List<ObjectPayload>();
             ObjectPayload parent = new ObjectPayload();
-            //String ObjectName = "";
             int i = 0;
             foreach (KeyValuePair<string, List<String>> entry in Header)
             {
@@ -275,11 +251,7 @@ namespace SFDCImportElectron.Salesforce
 
             PrepareBody();
 
-            ////Console.WriteLine("Flush salesforce data: {0}", body.records.Count);
-
-            string jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
-            ////Console.WriteLine("Salesforce payload: {0}", jsonBody);
-
+            String jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
             String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ObjectName;
 
             RestRequest request = new RestRequest(Url, Method.POST);
@@ -292,9 +264,6 @@ namespace SFDCImportElectron.Salesforce
 
             body = new SalesforceBody();
             Payload = new List<ObjectPayload>();
-
-            ////Console.WriteLine(response.Content);
-            //Environment.Exit(0);
 
             RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
 

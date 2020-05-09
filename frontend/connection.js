@@ -64,3 +64,20 @@ function spinnerOff() {
     document.getElementById("spinner").classList.remove("spinner");
     document.getElementById("spinner").classList.add("hide");
 }
+
+function logError(title, error) {
+
+    log(title);
+    log(error.Message);
+    console.log(log);
+    spinnerOff();
+    throw new Error();
+}
+
+function ParentSelected() {
+    checkboxes = document.querySelectorAll(".checkboxParent").forEach(function (element) {
+        element.checked = false;
+    });
+
+    this.checked = true;
+};

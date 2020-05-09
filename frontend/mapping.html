@@ -1,9 +1,17 @@
 ﻿<div id="map-sfdc-objects">
-    <div>Select objects you want to map with your file</div>
+    <div>Prepare mapping</div>
 
-    <input id="sfdc-objects-search-box" type="text" placeholder="filter during typing" /> 
-
-    <form id="sfdc-objects"></form>
-    <button name="createMapping" />Prepare Mapping 
+    <div style="margin-top:10px;">Existing objects:
+        <form id="sfdc-objects">
+            <table id="sfdc-objects-table"></table>
+        </form>
+    </div>
+    <div style="margin-top:10px;">Objects from file:
+        <form id="file-objects">
+            <table id="file-objects-table" style="margin-top:10px;">
+                <thead><tr><th>Column Name</th><th>Mapped to</th></tr></thead>
+            </table>
+        </form>
+    </div>
+    <button name="parseFile" />Parse file
 </div>
-

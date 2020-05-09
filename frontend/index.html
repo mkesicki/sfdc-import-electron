@@ -50,7 +50,7 @@
 
 
     <div id="log">
-        <textarea id="log-messages" style="width:100%; height:100%;margin-top:10px;min-height:100px;" readonly></textarea>
+        <textarea id="log-messages" readonly></textarea>
 
     </div>
     <script src="connection.js"></script>
@@ -99,11 +99,7 @@
             //let username = document.getElementById("username").value;
             connection.send("login", JSON.stringify(data), (err, response) => {
 
-                if (err) {
-                    log("Something very bad happen!");
-                    log(err.Message);
-                    console.error(err);
-                }
+                if (err) logError("Something very bad happen!", err);
 
                 console.log(response);
                 log(response);
@@ -114,11 +110,7 @@
 
                 connection.send("getSFDCObjects", (err, response) => {
 
-                    if (err) {
-                        log("Something very bad happen!");
-                        log(err.Message);
-                        console.error(err);
-                    }
+                    if (err) logError("Something very bad happen!", err);
                     let sfdcObjects = response;
                     //console.log(sfdcObjects);
                     log("List of objects retrieved...");
@@ -152,12 +144,7 @@
                             connection.send("getHeaderRow", (err, header) => {
 
                                 log("Get header row");
-
-                                if (err) {
-                                    log("Caramba, something is not ok");
-                                    log(err.Message);
-                                    connection.error(error);
-                                }
+                                if (err) logError("Caramba, something is not ok", err);
 
                                 form = document.getElementById("sfdc-objects");
 
@@ -166,29 +153,76 @@
                                         fields.push(form.elements[i].value);
                                     }
                                 }
-                                log(header);
+
+                                header = JSON.parse(header);
+                                console.log(header);
+
                                 spinnerOff();
 
-                                if (fields.length > 0) getMetadata(fields);
+                                if (fields.length > 0) getMetadata(fields, header);
                             }); //get header
                         });
 
-                        function getMetadata(fields) {
+                        function getMetadata(fields, header) {
 
                             spinnerOn();
                             log("Get medatada");
+                            var metadata;
                             connection.send("getMetadata", JSON.stringify(fields), (err, mapping) => {
 
-                                if (err) {
-                                    log("Good I am not Japanese ;)");
-                                    console.log(err.Message);
-                                    console.error(err);
+                                if (err) logError("Good I am not Japanese ;)", err);
+
+                                metadata = JSON.parse(mapping);
+                                console.log(metadata);
+
+                                addMapping(header, metadata);
+                            }); // get metadata
+                        }
+
+                        function addMapping(header, metadata) {
+                            fs.readFile('frontend/mapping.html', (err, data) => {
+
+                                if (err) logError("Load mapping file error", err);
+
+                                document.getElementById('main-container').innerHTML = data;
+
+                                //display columns from CSV file
+                                for (var i = 0; i < header.length; i++) {
+                                    container = document.getElementById("file-objects-table");
+
+                                    var row = document.createElement('tr');
+                                    row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget'>&nbsp;</td>";
+                                    container.appendChild(row);
                                 }
 
-                                console.log(mapping);
-                            }); // get metadata
+                                //display columns from metadata
+                                container = document.getElementById("sfdc-objects-table");
 
-                            spinnerOff();
+                                var thead = document.createElement('thead');
+                                var row = document.createElement('tr');
+                                var rowInput = document.createElement('tr');
+
+                                for (var i = 0; i < metadata.length; i++) {
+
+                                    //thead.innerHTML = thead.innerHTML + "<th>" + metadata[i].Key + "</th>"
+                                    th = document.createElement("th");
+                                    td = document.createElement("td");
+                                    th.innerHTML = "<th>" + metadata[i].Key + "</th>";
+                                    td.innerHTML = "<td class='cellMetadata'><label><input type='checkbox' value='" + metadata[i].Key + "' class='checkboxParent' />Parent</label></td>";
+                                    row.appendChild(th);
+                                    rowInput.appendChild(td)
+                                }
+
+                                thead.appendChild(row);
+                                container.appendChild(thead);
+                                container.appendChild(rowInput);
+
+                                document.querySelectorAll(".checkboxParent").forEach(function (element) {
+                                    element.addEventListener("change", ParentSelected);
+                                });                               
+                            });
+
+                            spinnerOff(); 
                         }
                     }) // read list html
                 });
