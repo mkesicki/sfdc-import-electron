@@ -16,8 +16,16 @@ namespace SFDCImportElectron
 
         static Salesforce.Salesforce SFDC;
 
+        static IParserInterface parser { get; set; }
+
+        static RestSharp.Serialization.Json.JsonSerializer serializer;
+        //static RestSharp.Serialization.Json.JsonDeserializer deserializer;
+
         static void Main()
-        {          
+        {
+
+            serializer = new RestSharp.Serialization.Json.JsonSerializer();
+
             var connection = new ConnectionBuilder()
                                 .WithLogging()
                                 .Build();
@@ -74,9 +82,9 @@ namespace SFDCImportElectron
                 FileLogger Logger = new FileLogger("logs");
 
                 SFDC = new Salesforce.Salesforce(ClientID, ClientSecret, Username, Password, LoginUrl, Logger);
-                RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
+               
 
-                CSVThread parser = new CSVThread(csv, Logger, SFDC);
+                parser = new CSVThread(csv, Logger, SFDC);
 
                 //return "{\"message\":\"Logged to salesforce instance: " + SFDC.InstanceUrl + "\", \"connection\":\"" + serializer.Serialize(SFDC) + "\"}";
 
@@ -87,9 +95,30 @@ namespace SFDCImportElectron
             {
                 List<Sobject> sobjects = SFDC.RetrieveObjects();
 
-                RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
+                //RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
                 return serializer.Serialize(sobjects);
             });
+
+
+            connection.On<string>("getHeaderRow", () => {
+
+                return serializer.Serialize(parser.Header);
+
+            });
+
+            connection.On<string, string>("getMetadata", fields => {
+
+                string[] args = JsonConvert.DeserializeObject<string[]>(fields);
+
+                foreach (string name in args)
+                {
+                    SFDC.RetrieveMetadata(name);
+                }
+
+                Dictionary<String, List<string>> data = SFDC.getMetadata();
+
+                return serializer.Serialize(data);
+            }); 
 
             // wait for incoming requests
             connection.Listen();

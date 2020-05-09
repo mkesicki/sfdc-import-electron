@@ -12,7 +12,7 @@ namespace SFDCImportElectron.Parser
         IParserInterface
     {
         public Dictionary<string, string> Row { get; set; }
-        public Dictionary<string, List<string>> Header { get; set; }
+        public List<string> Header { get; set; }
         public Dictionary<string, List<string>> Relations { get; set; }
 
         public List<string> Columns { get; set; }
@@ -35,7 +35,7 @@ namespace SFDCImportElectron.Parser
         public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc)
         {
             Cores = Environment.ProcessorCount;
-            Header = new Dictionary<string, List<string>>();
+            Header = new List<string>();
             Columns = new List<string>();
             Columns = new List<string>();
             Row = new Dictionary<string, string>();
@@ -102,7 +102,7 @@ namespace SFDCImportElectron.Parser
                     String[] data = message.Split(",");
 
                     //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
-                    sfdcs[cpu].PreparePayload(Relations, Header, data, line + this.startLine[cpu]);
+                    //sfdcs[cpu].PreparePayload(Relations, Header, data, line + this.startLine[cpu]);
 
                     //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
@@ -163,49 +163,16 @@ namespace SFDCImportElectron.Parser
             MoveToFileLine();
         }
 
-        public Dictionary<String, List<string>> GetHeader()
+        public List<string> GetHeader()
         {
             String header = CSV.ReadLine();
             string[] labels = header.Split(',');
 
-            Columns = labels.ToList<string>();
-            int i = 0;
+            foreach (String label in labels) {
 
-            foreach (String label in labels)
-            {
-                string[] parts = label.Split('.'); // separate object name from field name
-                //Columns.Add(parts[0] + "." + parts[1]);
-
-                List<string> tmp = new List<string>();
-                List<string> relTmp = new List<string>();
-
-                if (parts.Length == 3 && !Relations.ContainsKey(parts[2]))
-                {
-                    relTmp.Add(parts[0]);
-                    Relations[parts[2]] = relTmp;
-                    //Console.WriteLine("Skip column {0}", i);
-                }
-
-                if (Header.ContainsKey(parts[0]))
-                {
-                    tmp = Header[parts[0]];
-                }
-
-                tmp.Add(parts[1]);
-                Header[parts[0]] = tmp;
-                i++;
+                Header.Add(label);
             }
-
-            //foreach (string x in Columns) { Console.WriteLine("column: {0}", x); }
-
-            //get Metadata for salesforce objects
-
-
-            foreach (var key in Header.Keys)
-            {
-                sfdcs[0].RetrieveMetadata(key.ToString());
-            }
-
+          
             return Header;
         }
 

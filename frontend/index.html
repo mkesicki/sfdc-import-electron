@@ -28,17 +28,17 @@
         <div id="login-form-container">
             <div class="title">Login to Salesforce</div>
             <form id="login-form">
-                <div><label>Username: <input id="username" name="username" required /></label></div>
-                <div><label>Password: <input id="password" name="password" type="password" required /></label></div>
-                <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
-                <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required /></label></div>
+                <div><label>Username: <input id="username" name="username" required value="michal.kesicki2@cunning-fox-tgor5q.com" /></label></div>
+                <div><label>Password: <input id="password" name="password" type="password" value="DECB52F10FEAA5A" required /></label></div>
+                <div><label>Client Id: <input id="client_id" name="client_id" required value="3MVG91BJr_0ZDQ4tOAfzh.FvRVMjEdoK2rESiJ_ZFQtjuO3CnQyIT1m3U5TTh18JzZXzuCwDRVAJx5Ato8GVh" /></label></div>
+                <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required value="DECB52F10FEAA5AECAF2930F78560DB21E18A7C7A0F02191DC5C1E52AE85AD68" /></label></div>
                 <div>
                     <label>
                         Login to:
                         <select id="login_url" name="org" required>
                             <option value="">--Select--</option>
                             <option value="https://test.login.salesforce.com">Sandbox</option>
-                            <option value="https://login.salesforce.com" >Production</option>
+                            <option value="https://login.salesforce.com" selected>Production</option>
                         </select>
                     </label>
                 </div>
@@ -50,7 +50,7 @@
 
 
     <div id="log">
-        <textarea id="log-messages" style="width:100%; height:100%;margin-top:10px;min-height:100px;"></textarea>
+        <textarea id="log-messages" style="width:100%; height:100%;margin-top:10px;min-height:100px;" readonly></textarea>
 
     </div>
     <script src="connection.js"></script>
@@ -58,11 +58,11 @@
         //require('./connection.js')
 
         log("Welcome, let's rock together!");
-        document.getElementById("btn-login").addEventListener("click", function () {
+        document.getElementById("btn-login").addEventListener("click", function() {
 
             let form = document.getElementById("login-form");
             if (form.checkValidity() === false) {
-                
+
                 for (var i = 0; i < form.elements.length; i++) {
                     input = form.elements[i];
 
@@ -79,15 +79,14 @@
 
             log("Login to salesforce...")
 
-            document.getElementById("spinner").classList.remove("hide");
-            document.getElementById("spinner").classList.add("spinner");
+            spinnerOn();
 
             let username = document.getElementById("username").value;
             let password = document.getElementById("password").value;
             let client_id = document.getElementById("client_id").value;
             let client_secret = document.getElementById("client_secret").value;
             let login_url = document.getElementById("login_url").value;
-            let file_to_parse = document.getElementById("file_to_parse").files[0].name; 
+            let file_to_parse = document.getElementById("file_to_parse").files[0].name;
             let data = [];
 
             data[0] = username;
@@ -109,8 +108,7 @@
                 console.log(response);
                 log(response);
 
-                document.getElementById("spinner").classList.remove("spinner");
-                document.getElementById("spinner").classList.add("hide");
+                spinnerOff();
 
                 log("Get salesforce objects");
 
@@ -129,25 +127,72 @@
                         document.getElementById('main-container').innerHTML = data
                         parseObjectsList(sfdcObjects);
 
-                        document.getElementById("sfdc-objects-search-box").addEventListener("change", function () {
+                        document.getElementById("sfdc-objects-search-box").addEventListener("change", function() {
                             let value = this.value;
 
                             if (value.length > 0 && value.length < 3) {
 
 
                             } else if (value.length == 1) {
-
                                 //reset all
                                 search("--show-all");
                             } else {
-
                                 //filter
                                 search(value);
                             }
                         });
-                    })
+
+                        var fields = [];
+
+                        document.getElementById("createMapping").addEventListener("click", function() {
+
+                            log("Let's do the mapping");
+                            spinnerOn();
+
+                            connection.send("getHeaderRow", (err, header) => {
+
+                                log("Get header row");
+
+                                if (err) {
+                                    log("Caramba, something is not ok");
+                                    log(err.Message);
+                                    connection.error(error);
+                                }
+
+                                form = document.getElementById("sfdc-objects");
+
+                                for (var i = 0; i < form.elements.length; i++) {
+                                    if (form.elements[i].checked) {
+                                        fields.push(form.elements[i].value);
+                                    }
+                                }
+                                log(header);
+                                spinnerOff();
+
+                                if (fields.length > 0) getMetadata(fields);
+                            }); //get header
+                        });
+
+                        function getMetadata(fields) {
+
+                            spinnerOn();
+                            log("Get medatada");
+                            connection.send("getMetadata", JSON.stringify(fields), (err, mapping) => {
+
+                                if (err) {
+                                    log("Good I am not Japanese ;)");
+                                    console.log(err.Message);
+                                    console.error(err);
+                                }
+
+                                console.log(mapping);
+                            }); // get metadata
+
+                            spinnerOff();
+                        }
+                    }) // read list html
                 });
-                
+
                 //connection.close();
             });
         })

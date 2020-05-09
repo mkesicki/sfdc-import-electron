@@ -54,3 +54,13 @@ function search(query) {
         }
     });
 }
+
+function spinnerOn() {
+    document.getElementById("spinner").classList.remove("hide");
+    document.getElementById("spinner").classList.add("spinner");
+}
+
+function spinnerOff() {
+    document.getElementById("spinner").classList.remove("spinner");
+    document.getElementById("spinner").classList.add("hide");
+}

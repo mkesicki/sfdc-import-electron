@@ -29,7 +29,6 @@ namespace SFDCImportElectron.Salesforce
         private String LoginUrl { get; set; }
         public String InstanceUrl { get; set; }
         private List<ObjectPayload> Payload { get; set; }
-
         private Dictionary<String, Metadata> Meta { get; set; }
         RestClient Client;
         private ILoggerInterface Logger { get; set; }
@@ -95,7 +94,6 @@ namespace SFDCImportElectron.Salesforce
 
         public void RetrieveMetadata(String ObjectName)
         {
-
             RestRequest request = new RestRequest(InstanceUrl + "/services/data/" + ApiVersion + "/sobjects/" + ObjectName + "/describe", Method.GET);
             request.AddHeader("Authorization", Token);
 
@@ -110,7 +108,7 @@ namespace SFDCImportElectron.Salesforce
                 return;
             }
 
-            throw new ApplicationException("Error getting object Metadata");
+            throw new ApplicationException("Error getting " + ObjectName + " Metadata");
         }
 
         public List<Sobject> RetrieveObjects()
@@ -343,6 +341,27 @@ namespace SFDCImportElectron.Salesforce
             }
 
             return relationName;
+        }
+
+        public Dictionary<String, List<String>> getMetadata() {
+
+            Dictionary<string, List<String >> results = new Dictionary<string, List<String>>();
+
+            foreach (KeyValuePair<string, Metadata> meta in Meta) {
+
+                List<string> fields = new List<string>();
+
+                foreach (Field field in meta.Value.fields) {
+
+                    if (field.updateable) {
+                        fields.Add(field.name);
+                    }
+                }
+
+                results.Add(meta.Key, fields);
+            }
+
+            return results;
         }
     }
 
