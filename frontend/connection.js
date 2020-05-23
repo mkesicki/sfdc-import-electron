@@ -91,7 +91,9 @@ function dropHandler(ev) {
 
     span.textContent = span.getAttribute('data-parent') + "." + span.textContent;
 
+    ev.target.innerHTML = "";
     ev.target.appendChild(span);
+    
     //element.classList.add('hide');
     element.parentElement.remove();
     element.remove();
@@ -127,8 +129,7 @@ function addMapping(header, metadata) {
         }
 
         //display columns from metadata
-        parentContainer = document.getElementById("sfdc-objects-container");
-       
+        parentContainer = document.getElementById("sfdc-objects-container");       
 
         for (var i = 0; i < metadata.length; i++) {
             container = document.createElement('table');
@@ -306,7 +307,36 @@ function login() {
             log("List of objects retrieved...");
             loadList(sfdcObjects);
         });
-
-        //connection.close();
     });
+}
+
+
+function parseFile(event) {
+
+    var data = {};
+    var children = [];
+
+    rows = document.querySelectorAll("#file-objects-table tr");
+    parent = document.querySelector(".checkboxParent:checked");
+
+    for (var i = 0; i < rows.length; i++) {
+
+        if (i === 0) continue;
+
+        var map = {};
+
+        to = rows[i].cells[1];
+        column = to.textContent.split('.');
+
+        map.from = rows[i].cells[0].textContent;
+        map.toObject = column[0];
+        map.toColumn = column[1];
+
+        children.push(map);
+    }
+    data.parent = (parent) ? parent.value : null;
+    data.mapping = children;
+
+    console.info(data);
+    console.info(JSON.stringify(data));
 }
