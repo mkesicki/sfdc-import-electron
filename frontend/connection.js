@@ -82,12 +82,39 @@ function ParentSelected() {
     this.checked = true;
 };
 
+function dropHandler(ev) {
+    ev.preventDefault();
+    const id = ev.dataTransfer.getData("id");
+
+    element = document.getElementById(id);
+    var span = element.cloneNode(true);
+
+    span.textContent = span.getAttribute('data-parent') + "." + span.textContent;
+
+    ev.target.appendChild(span);
+    //element.classList.add('hide');
+    element.parentElement.remove();
+    element.remove();
+}
+
+function dragoverHandler(ev) {
+    console.info('dragover');
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move"    
+}
+
+function dragstartHandler(ev) {
+    console.info('we are moving')
+    console.info(ev.target);
+    ev.dataTransfer.setData("id", ev.target.id);
+    ev.dataTransfer.dropEffect = "move";
+}
 
 function addMapping(header, metadata) {
+    console.log(metadata);
     fs.readFile('frontend/mapping.html', (err, data) => {
 
         if (err) logError("Load mapping file error", err);
-
         document.getElementById('main-container').innerHTML = data;
 
         //display columns from CSV file
@@ -95,31 +122,47 @@ function addMapping(header, metadata) {
             container = document.getElementById("file-objects-table");
 
             var row = document.createElement('tr');
-            row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget'>&nbsp;</td>";
+            row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget'  ondrop='dropHandler(event)' ondragover='dragoverHandler(event)' >&nbsp;</td>"; //dropZone
             container.appendChild(row);
         }
 
         //display columns from metadata
-        container = document.getElementById("sfdc-objects-table");
-
-        var thead = document.createElement('thead');
-        var row = document.createElement('tr');
-        var rowInput = document.createElement('tr');
+        parentContainer = document.getElementById("sfdc-objects-container");
+       
 
         for (var i = 0; i < metadata.length; i++) {
+            container = document.createElement('table');
+            container.classList.add('sfdc-object-table');
+            var thead = document.createElement('thead');
+            var row = document.createElement('tr');
+            var rowInput = document.createElement('tr');
 
-            //thead.innerHTML = thead.innerHTML + "<th>" + metadata[i].Key + "</th>"
+            //set header row
             th = document.createElement("th");
             td = document.createElement("td");
             th.innerHTML = "<th>" + metadata[i].Key + "</th>";
             td.innerHTML = "<td class='cellMetadata'><label><input type='checkbox' value='" + metadata[i].Key + "' class='checkboxParent' />Parent</label></td>";
             row.appendChild(th);
             rowInput.appendChild(td)
-        }
 
-        thead.appendChild(row);
-        container.appendChild(thead);
-        container.appendChild(rowInput);
+            thead.appendChild(row);
+            container.appendChild(thead);
+            container.appendChild(rowInput);        
+            
+            for (var j = 0; j < metadata[i].Value.length; j++) {
+                var row = document.createElement('tr');
+                td = document.createElement("td");
+                td.innerHTML = "<td><span id='cell_" + i + "_" + j + "' data-parent='" + metadata[i].Key + "' class='draggableColumn' draggable='true' ondragstart='dragstartHandler(event)' >" + metadata[i].Value[j] + "</span></td>";
+                td.classList.add('cellMetadata');
+                //td.setAttribute('data-parent', metadata[i].Key);
+                
+                row.appendChild(td);
+                container.appendChild(row); 
+            }
+
+            parentContainer.appendChild(container);
+        }
+               
 
         document.querySelectorAll(".checkboxParent").forEach(function (element) {
             element.addEventListener("change", ParentSelected);
@@ -128,6 +171,9 @@ function addMapping(header, metadata) {
 
     spinnerOff();
 } //add mapping
+
+
+
 
 
 function loadList(sfdcObjects) {
@@ -197,8 +243,6 @@ function loadList(sfdcObjects) {
                 addMapping(header, metadata);
             }); // get metadata
         }
-
-
     }) // read list html
 }
 
