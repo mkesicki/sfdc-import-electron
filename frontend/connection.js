@@ -81,3 +81,188 @@ function ParentSelected() {
 
     this.checked = true;
 };
+
+
+function addMapping(header, metadata) {
+    fs.readFile('frontend/mapping.html', (err, data) => {
+
+        if (err) logError("Load mapping file error", err);
+
+        document.getElementById('main-container').innerHTML = data;
+
+        //display columns from CSV file
+        for (var i = 0; i < header.length; i++) {
+            container = document.getElementById("file-objects-table");
+
+            var row = document.createElement('tr');
+            row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget'>&nbsp;</td>";
+            container.appendChild(row);
+        }
+
+        //display columns from metadata
+        container = document.getElementById("sfdc-objects-table");
+
+        var thead = document.createElement('thead');
+        var row = document.createElement('tr');
+        var rowInput = document.createElement('tr');
+
+        for (var i = 0; i < metadata.length; i++) {
+
+            //thead.innerHTML = thead.innerHTML + "<th>" + metadata[i].Key + "</th>"
+            th = document.createElement("th");
+            td = document.createElement("td");
+            th.innerHTML = "<th>" + metadata[i].Key + "</th>";
+            td.innerHTML = "<td class='cellMetadata'><label><input type='checkbox' value='" + metadata[i].Key + "' class='checkboxParent' />Parent</label></td>";
+            row.appendChild(th);
+            rowInput.appendChild(td)
+        }
+
+        thead.appendChild(row);
+        container.appendChild(thead);
+        container.appendChild(rowInput);
+
+        document.querySelectorAll(".checkboxParent").forEach(function (element) {
+            element.addEventListener("change", ParentSelected);
+        });
+    });
+
+    spinnerOff();
+} //add mapping
+
+
+function loadList(sfdcObjects) {
+    fs.readFile('frontend/list.html', (err, data) => {
+
+        if (err) logError("Something very bad happen!", err);
+
+        document.getElementById('main-container').innerHTML = data
+        parseObjectsList(sfdcObjects);
+
+        document.getElementById("sfdc-objects-search-box").addEventListener("change", function () {
+            let value = this.value;
+
+            if (value.length > 0 && value.length < 3) {
+
+
+            } else if (value.length == 1) {
+                //reset all
+                search("--show-all");
+            } else {
+                //filter
+                search(value);
+            }
+        });
+
+        var fields = [];
+
+        document.getElementById("createMapping").addEventListener("click", function () {
+
+            log("Let's do the mapping");
+            spinnerOn();
+
+            connection.send("getHeaderRow", (err, header) => {
+
+                log("Get header row");
+                if (err) logError("Caramba, something is not ok", err);
+
+                form = document.getElementById("sfdc-objects");
+
+                for (var i = 0; i < form.elements.length; i++) {
+                    if (form.elements[i].checked) {
+                        fields.push(form.elements[i].value);
+                    }
+                }
+
+                header = JSON.parse(header);
+                console.log(header);
+
+                spinnerOff();
+
+                if (fields.length > 0) getMetadata(fields, header);
+            }); //get header
+        });
+
+        function getMetadata(fields, header) {
+
+            spinnerOn();
+            log("Get medatada");
+            var metadata;
+            connection.send("getMetadata", JSON.stringify(fields), (err, mapping) => {
+
+                if (err) logError("Good I am not Japanese ;)", err);
+
+                metadata = JSON.parse(mapping);
+                console.log(metadata);
+
+                addMapping(header, metadata);
+            }); // get metadata
+        }
+
+
+    }) // read list html
+}
+
+
+function login() {
+
+
+    let form = document.getElementById("login-form");
+    if (form.checkValidity() === false) {
+
+        for (var i = 0; i < form.elements.length; i++) {
+            input = form.elements[i];
+
+            if (input.checkValidity() === false) {
+                console.info(input.validationMessage);
+                input.classList.add('error');
+                //input.setCustomValidity(input.validationMessage);
+            }
+        }
+
+        //form has error do not send it
+        return;
+    }
+
+    log("Login to salesforce...")
+
+    spinnerOn();
+
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
+    let client_id = document.getElementById("client_id").value;
+    let client_secret = document.getElementById("client_secret").value;
+    let login_url = document.getElementById("login_url").value;
+    let file_to_parse = document.getElementById("file_to_parse").files[0].name;
+    let data = [];
+
+    data[0] = username;
+    data[1] = password;
+    data[2] = client_id;
+    data[3] = client_secret;
+    data[4] = login_url;
+    data[5] = file_to_parse;
+
+    //let username = document.getElementById("username").value;
+    connection.send("login", JSON.stringify(data), (err, response) => {
+
+        if (err) logError("Something very bad happen!", err);
+
+        console.log(response);
+        log(response);
+
+        spinnerOff();
+
+        log("Get salesforce objects");
+
+        connection.send("getSFDCObjects", (err, response) => {
+
+            if (err) logError("Something very bad happen!", err);
+            let sfdcObjects = response;
+            //console.log(sfdcObjects);
+            log("List of objects retrieved...");
+            loadList(sfdcObjects);
+        });
+
+        //connection.close();
+    });
+}
