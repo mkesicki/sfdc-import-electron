@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Authentication;
+using SFDCImportElectron.Converter;
 
 namespace SFDCImportElectron.Salesforce
 {
@@ -28,14 +29,14 @@ namespace SFDCImportElectron.Salesforce
         private String Password { get; set; }
         private String LoginUrl { get; set; }
         public String InstanceUrl { get; set; }
-        private List<ObjectPayload> Payload { get; set; }
+        //private List<ObjectPayload> Payload { get; set; }
         private Dictionary<String, Metadata> Meta { get; set; }
         RestClient Client;
         private ILoggerInterface Logger { get; set; }
 
         private SalesforceBody body = new SalesforceBody();
 
-        private String ObjectName;
+        private String ParentObject;
 
         public virtual object Clone()
         {
@@ -56,7 +57,7 @@ namespace SFDCImportElectron.Salesforce
             this.Logger = Logger;
 
             Meta = new Dictionary<String, Metadata>();
-            Payload = new List<ObjectPayload>();
+            //Payload = new List<ObjectPayload>();
 
             Login();
         }
@@ -83,6 +84,8 @@ namespace SFDCImportElectron.Salesforce
                 Token = "Bearer " + body["access_token"];
                 InstanceUrl = body["instance_url"];
                 Client = new RestClient(InstanceUrl);
+
+                Console.WriteLine("Logged to: " + InstanceUrl);    
 
                 return;
             }
@@ -131,128 +134,21 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public void PreparePayload(Dictionary<string, List<string>> Relations, Dictionary<string, List<string>> Header, String[] data, int referenceNumber)
+        public void setMapping(String jsonBody)
         {
-            List<ObjectPayload> Children = new List<ObjectPayload>();
-            ObjectPayload parent = new ObjectPayload();
-            int i = 0;
-            foreach (KeyValuePair<string, List<String>> entry in Header)
-            {
-                Dictionary<String, object> fields = new Dictionary<String, object>();
+            MappingPayload mapping = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
 
-                foreach (String column in entry.Value)
-                {
-                    fields.Add(column, data[i]);
-                    i++;
-                }
-
-                if (Relations.ContainsKey(entry.Key))
-                {
-                    parent = new ObjectPayload { Name = entry.Key, Fields = fields, Reference = entry.Key + referenceNumber.ToString() };
-                }
-                else
-                {
-                    Children.Add(new ObjectPayload { Name = entry.Key, Fields = fields, Reference = entry.Key + referenceNumber.ToString() });
-                }
-            }
-
-            if (parent != null)
-            {
-                if (String.IsNullOrEmpty(this.ObjectName))
-                {
-                    this.ObjectName = parent.Name;
-                }
-                Payload.Add(
-                     new ObjectPayload { Name = parent.Name, Fields = parent.Fields, Reference = parent.Reference, Children = Children }
-                );
-            }
-            else
-            {
-                foreach (ObjectPayload body in Children)
-                {
-                    if (String.IsNullOrEmpty(this.ObjectName))
-                    {
-                        this.ObjectName = body.Name;
-                    }
-                    Payload.Add(
-                     new ObjectPayload { Name = body.Name, Fields = body.Fields, Reference = body.Reference }
-                );
-                }
-            }
-
-            if (Payload.Count >= BatchSize) flush();
+            ParentObject = mapping.parent;
         }
-
-        public void PrepareBody()
-        {
-            List<Record> records = new List<Record>();
-            //SalesforceBody body = new SalesforceBody();
-            foreach (ObjectPayload PayloadObject in Payload)
-            {
-                Dictionary<string, string> Attributes = new Dictionary<string, string>();
-                Attributes.Add("type", PayloadObject.Name);
-                Attributes.Add("referenceId", "ref" + PayloadObject.Reference);
-
-                Dictionary<string, SalesforceBody> children = new Dictionary<string, SalesforceBody>();
-                List<Record> childrenObjects;
-
-                Boolean isChildExists = false;
-                Metadata parentMetadata = Meta[PayloadObject.Name];
-
-                foreach (ObjectPayload Child in PayloadObject.Children)
-                {
-                    String keyName = FindRelationName(parentMetadata, Child.Name);
-
-                    if (children.ContainsKey(keyName))
-                    {
-                        childrenObjects = children[keyName].records;
-                        isChildExists = true;
-                    }
-                    else
-                    {
-                        childrenObjects = new List<Record>();
-                    };
-
-                    Dictionary<string, string> ChildAttributes = new Dictionary<string, string>();
-
-                    ChildAttributes.Add("type", Child.Name);
-                    ChildAttributes.Add("referenceId", "ref" + Child.Reference);
-
-                    if (childrenObjects.Count == 0)
-                    {
-                        childrenObjects.Add(new Record { attributes = ChildAttributes, fields = Child.Fields });
-                    }
-                    else
-                    {
-                        childrenObjects.Add(new Record { fields = Child.Fields });
-                    }
-
-                    if (!isChildExists)
-                    {
-                        children.Add(keyName, new SalesforceBody { records = childrenObjects });
-                    }
-                    else
-                    {
-                        children[keyName].records = childrenObjects;
-                    }
-                }
-
-                records.Add(
-                    new Record { attributes = Attributes, fields = PayloadObject.Fields, children = children }
-                );
-            }
-
-            body.records = records;
-        }
-
+       
         public void flush()
         {
-            if (Payload.Count == 0) return;
+            //if (Payload.Count == 0) return;
 
-            PrepareBody();
+            //PrepareBody();
 
             String jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
-            String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ObjectName;
+            String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ParentObject;
 
             RestRequest request = new RestRequest(Url, Method.POST);
             request.AddHeader("Authorization", Token);
@@ -263,7 +159,7 @@ namespace SFDCImportElectron.Salesforce
             IRestResponse response = Client.Execute(request);
 
             body = new SalesforceBody();
-            Payload = new List<ObjectPayload>();
+            //Payload = new List<ObjectPayload>();
 
             RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
 
@@ -297,21 +193,6 @@ namespace SFDCImportElectron.Salesforce
             }
         }
 
-        private String FindRelationName(Metadata Meta, String Name)
-        {
-            String relationName = "";
-
-            foreach (ChildRelationship relationship in Meta.childRelationships)
-            {
-                if (relationship.childSObject.Equals(Name))
-                {
-                    return relationship.relationshipName;
-                }
-            }
-
-            return relationName;
-        }
-
         public Dictionary<String, List<String>> getMetadata() {
 
             Dictionary<string, List<String >> results = new Dictionary<string, List<String>>();
@@ -334,83 +215,12 @@ namespace SFDCImportElectron.Salesforce
         }
     }
 
-    public class ObjectPayload
+/*    public class ObjectPayload
     {
         public String Name { get; set; }
         public Dictionary<string, object> Fields { get; set; }
         public string Reference { get; set; }
         public List<ObjectPayload> Children { get; set; }
-    }
-
-    public class Record
-    {
-        public Dictionary<string, string> attributes { get; set; }
-
-        public Dictionary<String, object> fields { get; set; }
-
-        public Dictionary<string, SalesforceBody> children { get; set; }
-    }
-
-    public class SalesforceBody
-    {
-        public List<Record> records { get; set; }
-    }
-
-    internal class RecordObjectConverter : CustomCreationConverter<Record>
-    {
-        public override Record Create(Type objectType)
-        {
-            return new Record
-            {
-                children = new Dictionary<string, SalesforceBody>(),
-                fields = new Dictionary<string, object>(),
-                attributes = new Dictionary<string, string>()
-            };
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteStartObject();
-
-            // Write properties.
-            var propertyInfos = value.GetType().GetProperties();
-            foreach (var propertyInfo in propertyInfos)
-            {
-                // Skip the children & fields property.
-                if (propertyInfo.Name == "children" || propertyInfo.Name == "fields")
-                    continue;
-
-                writer.WritePropertyName(propertyInfo.Name);
-                var propertyValue = propertyInfo.GetValue(value);
-                serializer.Serialize(writer, propertyValue);
-            }
-
-            // Write dictionary key-value pairs.
-            var record = (Record)value;
-            if (record.children != null)
-            {
-                foreach (var kvp in record.children)
-                {
-                    writer.WritePropertyName(kvp.Key);
-                    serializer.Serialize(writer, kvp.Value);
-                }
-            }
-
-            if (record.fields != null)
-            {
-                foreach (var kvp in record.fields)
-                {
-                    writer.WritePropertyName(kvp.Key);
-                    serializer.Serialize(writer, kvp.Value);
-                }
-            }
-            writer.WriteEndObject();
-        }
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
-
-    }
+    }*/    
 }
 

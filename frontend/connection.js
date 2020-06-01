@@ -148,12 +148,14 @@ function addMapping(header, metadata) {
 
             thead.appendChild(row);
             container.appendChild(thead);
-            container.appendChild(rowInput);        
+            container.appendChild(rowInput);
+
+            var values = metadata[i].Value.sort();
             
-            for (var j = 0; j < metadata[i].Value.length; j++) {
+            for (var j = 0; j < values.length; j++) {
                 var row = document.createElement('tr');
                 td = document.createElement("td");
-                td.innerHTML = "<td><span id='cell_" + i + "_" + j + "' data-parent='" + metadata[i].Key + "' class='draggableColumn' draggable='true' ondragstart='dragstartHandler(event)' >" + metadata[i].Value[j] + "</span></td>";
+                td.innerHTML = "<td><span id='cell_" + i + "_" + j + "' data-parent='" + metadata[i].Key + "' class='draggableColumn' draggable='true' ondragstart='dragstartHandler(event)' >" + values[j] + "</span></td>";
                 td.classList.add('cellMetadata');
                 //td.setAttribute('data-parent', metadata[i].Key);
                 

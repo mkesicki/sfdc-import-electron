@@ -13,14 +13,13 @@ namespace SFDCImportElectron.Parser
     {
         public Dictionary<string, string> Row { get; set; }
         public List<string> Header { get; set; }
-        public Dictionary<string, List<string>> Relations { get; set; }
+        public Dictionary<int, string> HeaderMapping { get; set; }
 
         public List<string> Columns { get; set; }
         public int Success { get; set; }
         public int Error { get; set; }
         public string Path { get; set; }
         private int Cores { get; set; }
-        private ProgressBar StatusBar { get; set; }
         public int Size { get; set; }
         public int BatchSize { get; set; }
         private StreamReader CSV { get; set; }
@@ -32,14 +31,16 @@ namespace SFDCImportElectron.Parser
         private List<Thread> Threads = new List<Thread>();
         private List<Salesforce.Salesforce> sfdcs { get; set; }
 
+
         public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc)
         {
             Cores = Environment.ProcessorCount;
             Header = new List<string>();
+            HeaderMapping = new Dictionary<int, string>();
+
             Columns = new List<string>();
             Columns = new List<string>();
             Row = new Dictionary<string, string>();
-            Relations = new Dictionary<string, List<string>>();
             startLine = new Dictionary<int, int>();
             sfdcs = new List<Salesforce.Salesforce>();
 
@@ -55,30 +56,17 @@ namespace SFDCImportElectron.Parser
             CSV = new StreamReader(Path);
             Size = File.ReadLines(Path).Count() - 1; //do not count header file
 
-            //Console.WriteLine("Number of rows to process:  {0}", Size);
-
             //get Header
             sfdcs.Add(Sfdc);
             GetHeader();
 
-            sfdcs[0].BatchSize = Sfdc.BatchSize = Relations.Count; //configure batch size according to number of relations
+            sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
 
             //clone salesforce instances
             for (int i = 0; i < Cores - 1; i++)
             {
                 sfdcs.Add((Salesforce.Salesforce)Sfdc.Clone());
             }
-
-            //prepare progress bar
-            //var options = new ProgressBarOptions
-            //{
-            //    ForegroundColor = ConsoleColor.Yellow,
-            //    ForegroundColorDone = ConsoleColor.DarkGreen,
-            //    BackgroundColor = ConsoleColor.DarkGray,
-            //    BackgroundCharacter = '\u2593'
-            //};
-
-            //StatusBar = new ProgressBar(Size, "", options);
 
             //prepare copies of files for threads
             PrepareFileToParse();
@@ -98,7 +86,6 @@ namespace SFDCImportElectron.Parser
                     String message = sr.ReadLine();
 
                     //split line by column, add to payload, every batch limit size send to SFDC
-
                     String[] data = message.Split(",");
 
                     //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
@@ -167,10 +154,13 @@ namespace SFDCImportElectron.Parser
         {
             String header = CSV.ReadLine();
             string[] labels = header.Split(',');
+            int i = 0;
 
             foreach (String label in labels) {
 
                 Header.Add(label);
+                HeaderMapping.Add(i, label);
+                i++;
             }
           
             return Header;
@@ -183,7 +173,6 @@ namespace SFDCImportElectron.Parser
 
         private void MoveToFileLine()
         {
-
             for (int i = 0; i < Cores; i++)
             {
 
