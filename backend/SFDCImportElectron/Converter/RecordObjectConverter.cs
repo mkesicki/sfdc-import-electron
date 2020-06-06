@@ -11,12 +11,7 @@ namespace SFDCImportElectron.Converter
     {
         public override Record Create(Type objectType)
         {
-            return new Record
-            {
-                children = new Dictionary<string, SalesforceBody>(),
-                fields = new Dictionary<string, object>(),
-                attributes = new Dictionary<string, string>()
-            };
+            return new Record();            
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -28,8 +23,7 @@ namespace SFDCImportElectron.Converter
             foreach (var propertyInfo in propertyInfos)
             {
                 // Skip the children & fields property.
-                if (propertyInfo.Name == "children" || propertyInfo.Name == "fields")
-                    continue;
+                if (propertyInfo.Name == "children" || propertyInfo.Name == "fields") continue;
 
                 writer.WritePropertyName(propertyInfo.Name);
                 var propertyValue = propertyInfo.GetValue(value);

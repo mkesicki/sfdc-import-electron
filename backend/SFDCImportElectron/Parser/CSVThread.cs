@@ -1,5 +1,4 @@
 ﻿using SFDCImportElectron.Logger;
-using ShellProgressBar;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +11,7 @@ namespace SFDCImportElectron.Parser
         IParserInterface
     {
         public Dictionary<string, string> Row { get; set; }
-        public List<string> Header { get; set; }
-        public Dictionary<int, string> HeaderMapping { get; set; }
+        public Dictionary<int, string> Header { get; set; }
 
         public List<string> Columns { get; set; }
         public int Success { get; set; }
@@ -22,6 +20,8 @@ namespace SFDCImportElectron.Parser
         private int Cores { get; set; }
         public int Size { get; set; }
         public int BatchSize { get; set; }
+        public int MinimumThreadSize { get; set; }
+
         private StreamReader CSV { get; set; }
         private List<StreamReader> FilesToParse { get; set; }
         private ILoggerInterface Logger { get; set; }
@@ -32,17 +32,15 @@ namespace SFDCImportElectron.Parser
         private List<Salesforce.Salesforce> sfdcs { get; set; }
 
 
-        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc)
+        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc, String mapping)
         {
-            Cores = Environment.ProcessorCount;
-            Header = new List<string>();
-            HeaderMapping = new Dictionary<int, string>();
-
+            Header = new Dictionary<int, string>();
             Columns = new List<string>();
             Columns = new List<string>();
             Row = new Dictionary<string, string>();
             startLine = new Dictionary<int, int>();
             sfdcs = new List<Salesforce.Salesforce>();
+            MinimumThreadSize = 1000;
 
             this.Logger = Logger;
 
@@ -54,11 +52,16 @@ namespace SFDCImportElectron.Parser
             this.Path = Path;
 
             CSV = new StreamReader(Path);
-            Size = File.ReadLines(Path).Count() - 1; //do not count header file
+            Size = File.ReadLines(Path).Count() - 1; //do not count header line
+
+            Cores = (Size > MinimumThreadSize) ? Environment.ProcessorCount : 1;
 
             //get Header
             sfdcs.Add(Sfdc);
             GetHeader();
+
+            //set mapping
+            Sfdc.SetMapping(mapping, Header);
 
             sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
 
@@ -88,12 +91,11 @@ namespace SFDCImportElectron.Parser
                     //split line by column, add to payload, every batch limit size send to SFDC
                     String[] data = message.Split(",");
 
-                    //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
-                    //sfdcs[cpu].PreparePayload(Relations, Header, data, line + this.startLine[cpu]);
+                    Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
+                    sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
 
-                    //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
+                    Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
-                    //StatusBar.Tick();
                 }
             }
         }
@@ -124,14 +126,11 @@ namespace SFDCImportElectron.Parser
                 if (count == Cores) { loop = false; }
             }
 
-            //StatusBar.Dispose();
-
             return;
         }
 
         private void PrepareFileToParse()
         {
-
             FilesToParse = new List<StreamReader>();
 
             DateTime foo = DateTime.UtcNow;
@@ -150,7 +149,7 @@ namespace SFDCImportElectron.Parser
             MoveToFileLine();
         }
 
-        public List<string> GetHeader()
+        public Dictionary<int, string> GetHeader()
         {
             String header = CSV.ReadLine();
             string[] labels = header.Split(',');
@@ -158,8 +157,7 @@ namespace SFDCImportElectron.Parser
 
             foreach (String label in labels) {
 
-                Header.Add(label);
-                HeaderMapping.Add(i, label);
+                Header.Add(i, label);
                 i++;
             }
           
@@ -175,7 +173,6 @@ namespace SFDCImportElectron.Parser
         {
             for (int i = 0; i < Cores; i++)
             {
-
                 int startLine = (i * BatchSize) + 1;
                 this.startLine.Add(i, startLine);
                 int readed = 0;

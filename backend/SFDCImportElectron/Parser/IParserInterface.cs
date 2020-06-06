@@ -6,13 +6,12 @@ namespace SFDCImportElectron.Parser
     interface IParserInterface
     {
         Dictionary<String, String> Row { get; set; }
-        public List<string> Header { get; set; }
-        //public Dictionary<string, List<string>> Relations { get; set; }
+        public Dictionary<int, string> Header { get; set; }
 
         int Success { get; set; }
         int Error { get; set; }
 
-        public List<string> GetHeader();
+        public Dictionary<int, string> GetHeader();
         public Dictionary<String, String> ReadRow();
         public void Parse();     
     }

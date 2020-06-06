@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using RestSharp;
 using SFDCImportElectron.Logger;
 using SFDCImportElectron.Model;
@@ -15,34 +14,28 @@ namespace SFDCImportElectron.Salesforce
     class Salesforce : ICloneable
     {
         private readonly String ApiVersion = "v48.0"; //yeah, config variable
-
-        private int _batchSize = 100;
-
-        public int BatchSize {
-            get {return _batchSize; }
-            set { _batchSize = (int)(200/(value+1));}
-        }
-                private String Token { get; set; }
+        public int BatchSize { get; set; }
+        private String Token { get; set; }
         private String ClientId { get; set; }
         private String ClientSecret { get; set; }
         private String Username { get; set; }
         private String Password { get; set; }
         private String LoginUrl { get; set; }
         public String InstanceUrl { get; set; }
-        //private List<ObjectPayload> Payload { get; set; }
         private Dictionary<String, Metadata> Meta { get; set; }
-        RestClient Client;
+        private RestClient Client;
         private ILoggerInterface Logger { get; set; }
-
         private SalesforceBody body = new SalesforceBody();
-
         private String ParentObject;
+        Dictionary<int, MappingPayload.Mapping> Mapping { get; set; }
 
         public virtual object Clone()
         {
             Salesforce clone = new Salesforce(ClientId, ClientSecret, Username, Password, LoginUrl, Logger);
             clone.Meta = this.Meta;
-            clone._batchSize = this._batchSize;
+            clone.BatchSize = this.BatchSize;
+            clone.ParentObject = this.ParentObject;
+            clone.Mapping = this.Mapping;
 
             return clone;
         }
@@ -55,10 +48,10 @@ namespace SFDCImportElectron.Salesforce
             this.Password = Password;
             this.LoginUrl = LoginUrl;
             this.Logger = Logger;
+            this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
+            this.BatchSize = 200;
 
             Meta = new Dictionary<String, Metadata>();
-            //Payload = new List<ObjectPayload>();
-
             Login();
         }
 
@@ -84,8 +77,6 @@ namespace SFDCImportElectron.Salesforce
                 Token = "Bearer " + body["access_token"];
                 InstanceUrl = body["instance_url"];
                 Client = new RestClient(InstanceUrl);
-
-                Console.WriteLine("Logged to: " + InstanceUrl);    
 
                 return;
             }
@@ -124,6 +115,7 @@ namespace SFDCImportElectron.Salesforce
             if (HttpStatusCode.OK == response.StatusCode)
             {
                 RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
+
                 //Console.WriteLine(response.Content);
                 MetadataSobject sobjects = deserializer.Deserialize<MetadataSobject>(response);
 
@@ -134,20 +126,89 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public void setMapping(String jsonBody)
+        public void SetMapping(String jsonBody, Dictionary<int, string> Header)
         {
-            MappingPayload mapping = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
 
-            ParentObject = mapping.parent;
+            MappingPayload tmp = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
+            ParentObject = tmp.parent;
+
+            Dictionary<int, MappingPayload.Mapping> mapping = new Dictionary<int, MappingPayload.Mapping>();
+
+            foreach (KeyValuePair<int, String> entry in Header)
+            {
+                MappingPayload.Mapping map = tmp.find(entry.Value);
+                Mapping.Add(entry.Key, map);
+                if (!Meta.ContainsKey(map.toObject))
+                {
+                    RetrieveMetadata(map.toObject);
+                }
+            }
+
+            RestSharp.Serialization.Json.JsonSerializer  serializer = new RestSharp.Serialization.Json.JsonSerializer();
+            String json = serializer.Serialize(Mapping);
         }
-       
+
+        public void PreparePayload(String[] data, int line) {
+
+            Dictionary<string, Dictionary<string, object>> body = new Dictionary<string, Dictionary<string, object>>();
+            Record parent = new Record();
+
+            int i = 0;
+            foreach (String value in data) {
+
+                //only if field was mapped
+                if (Mapping.ContainsKey(i)) {
+                    MappingPayload.Mapping map = Mapping[i];
+
+                    Dictionary<string, object> dataset = new Dictionary<string, object>();
+                    dataset.Add(map.toColumn, value);
+
+                    if (body.ContainsKey(map.toObject))
+                    {
+                        body[map.toObject].Add(map.toColumn, value);
+                    }
+                    else
+                    {
+                        body.Add(map.toObject, dataset);
+                    }
+                }
+                i++;
+            }
+
+            parent.attributes.Add("type", ParentObject);
+            parent.attributes.Add("referenceId", ParentObject + line.ToString());
+
+            parent.fields = body[ParentObject];
+
+            List<Record> records = new List<Record>();
+            SalesforceBody children = new SalesforceBody();
+
+            foreach (KeyValuePair<string, Dictionary<string, object>> entry in body)
+            {
+                if (entry.Key == ParentObject) continue;
+
+                Record child = new Record();
+
+                child.attributes.Add("type", entry.Key);
+                child.attributes.Add("referenceId", entry.Key + line.ToString());
+                child.fields = entry.Value;
+
+                children.records = records;
+                parent.children.Add(Meta[entry.Key].labelPlural, new SalesforceBody(child));
+            }
+
+            this.body.records.Add(parent);
+
+            //if (this.body.records.Count >= BatchSize) flush();
+        }
+
         public void flush()
         {
-            //if (Payload.Count == 0) return;
-
-            //PrepareBody();
+            if (body.records.Count == 0) return;
 
             String jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
+            Console.WriteLine("Send to SFDC: " + jsonBody);
+
             String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ParentObject;
 
             RestRequest request = new RestRequest(Url, Method.POST);
@@ -159,7 +220,6 @@ namespace SFDCImportElectron.Salesforce
             IRestResponse response = Client.Execute(request);
 
             body = new SalesforceBody();
-            //Payload = new List<ObjectPayload>();
 
             RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
 
@@ -214,13 +274,4 @@ namespace SFDCImportElectron.Salesforce
             return results;
         }
     }
-
-/*    public class ObjectPayload
-    {
-        public String Name { get; set; }
-        public Dictionary<string, object> Fields { get; set; }
-        public string Reference { get; set; }
-        public List<ObjectPayload> Children { get; set; }
-    }*/    
 }
-
