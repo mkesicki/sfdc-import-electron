@@ -49,7 +49,7 @@ namespace SFDCImportElectron.Salesforce
             this.LoginUrl = LoginUrl;
             this.Logger = Logger;
             this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
-            this.BatchSize = 200;
+            this.BatchSize = 100; //@TODO make it valid
 
             Meta = new Dictionary<String, Metadata>();
             Login();
@@ -199,7 +199,7 @@ namespace SFDCImportElectron.Salesforce
 
             this.body.records.Add(parent);
 
-            //if (this.body.records.Count >= BatchSize) flush();
+            if (this.body.records.Count >= BatchSize) flush();
         }
 
         public void flush()

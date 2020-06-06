@@ -126,6 +126,8 @@ namespace SFDCImportElectron.Parser
                 if (count == Cores) { loop = false; }
             }
 
+            Logger.Save();
+
             return;
         }
 
