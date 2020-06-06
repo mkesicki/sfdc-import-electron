@@ -93,8 +93,7 @@ namespace SFDCImportElectron.Parser
 
                     Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
                     sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
-
-                    Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
+                    //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
                 }
             }

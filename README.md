@@ -17,4 +17,3 @@ TODOs:
 - Add user's a chance to change mind during mapping of fields
 - Set Batch size correctly related to number of child objects
 - Maybe minimum number of rows to parse in threads should be a config param
-- Store real info in logger (parse success and error response from SFDC)
