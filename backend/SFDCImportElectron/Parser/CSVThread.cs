@@ -31,8 +31,10 @@ namespace SFDCImportElectron.Parser
         private List<Thread> Threads = new List<Thread>();
         private List<Salesforce.Salesforce> sfdcs { get; set; }
 
+        public Boolean isInProgress  { get; set;}
 
-        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc, String mapping)
+
+        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc /*, String mapping*/)
         {
             Header = new Dictionary<int, string>();
             Columns = new List<string>();
@@ -41,6 +43,7 @@ namespace SFDCImportElectron.Parser
             startLine = new Dictionary<int, int>();
             sfdcs = new List<Salesforce.Salesforce>();
             MinimumThreadSize = 1000;
+            isInProgress = false;
 
             this.Logger = Logger;
 
@@ -60,8 +63,8 @@ namespace SFDCImportElectron.Parser
             sfdcs.Add(Sfdc);
             GetHeader();
 
-            //set mapping
-            Sfdc.SetMapping(mapping, Header);
+            //Sfdc.SetMapping(mapping, Header);
+
 
             sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
 
@@ -81,6 +84,7 @@ namespace SFDCImportElectron.Parser
             int cpu = (int)core;
             int line = 0;
             Dictionary<String, Dictionary<String, String>> payload = new Dictionary<String, Dictionary<String, String>>();
+            isInProgress = true;
 
             using (StreamReader sr = FilesToParse[cpu])
             {
@@ -91,7 +95,7 @@ namespace SFDCImportElectron.Parser
                     //split line by column, add to payload, every batch limit size send to SFDC
                     String[] data = message.Split(",");
 
-                    Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
+                    //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
                     sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
                     //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
@@ -125,6 +129,7 @@ namespace SFDCImportElectron.Parser
                 if (count == Cores) { loop = false; }
             }
 
+            isInProgress = false;
             Logger.Save();
 
             return;

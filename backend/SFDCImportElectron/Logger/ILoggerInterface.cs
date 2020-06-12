@@ -9,5 +9,8 @@ namespace SFDCImportElectron.Logger
         public void Error(String message);
         public void Save();
         public void Close();
+
+        public int getErrorSize();
+        public int getSucessSize();
     }
 }

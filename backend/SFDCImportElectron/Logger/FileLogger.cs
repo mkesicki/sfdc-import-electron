@@ -89,6 +89,14 @@ namespace SFDCImportElectron.Logger
         {
             _logErrors.Add(new LogMessage(PathError, Message));
         }
+
+        public int getErrorSize()
+        {
+            return _logErrors.Count;
+        }
+        public int getSucessSize() {
+            return _logMessages.Count;
+        }
     }
     public class LogMessage
     {
@@ -99,6 +107,6 @@ namespace SFDCImportElectron.Logger
         {
             Filepath = path;
             Text = Message;
-        }
+        }     
     }
 }

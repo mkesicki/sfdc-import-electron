@@ -178,8 +178,23 @@ namespace SFDCImportElectron.Salesforce
             parent.attributes.Add("type", ParentObject);
             parent.attributes.Add("referenceId", ParentObject + line.ToString());
 
-            parent.fields = body[ParentObject];
 
+            RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
+            String x = serializer.Serialize(body);
+
+
+            //Console.WriteLine(x);
+         
+
+            try
+            {
+                parent.fields = body[ParentObject];
+            }
+            catch (Exception e) {
+                Console.WriteLine(x);
+                Console.WriteLine("wtf: " + ParentObject);
+                throw e;
+            }
             List<Record> records = new List<Record>();
             SalesforceBody children = new SalesforceBody();
 
@@ -207,7 +222,7 @@ namespace SFDCImportElectron.Salesforce
             if (body.records.Count == 0) return;
 
             String jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
-            Console.WriteLine("Send to SFDC: " + jsonBody);
+            //Console.WriteLine("Send to SFDC: " + jsonBody);
 
             String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ParentObject;
 

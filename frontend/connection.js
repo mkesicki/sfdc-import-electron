@@ -30,7 +30,6 @@ function parseObjectsList(sfdcObjects) {
     }
 }
 
-
 function search(query) {
 
     query = query.toLowerCase();
@@ -72,6 +71,29 @@ function logError(title, error) {
     console.log(log);
     spinnerOff();
     throw new Error();
+}
+
+function checkStatus() {
+
+    setTimeout(() => {
+
+        connection.send("getStatus", (err, response) => {
+
+            if (err) logError("Caramba, something is not ok", err);
+
+            data = JSON.parse(response);
+            console.log(response);
+
+            log(`Processing ${data.all} rows: ${data.success} success / ${data.error} errors`);
+            console.info(data.inProgress);
+            if (data.inProgress === "True") {
+                checkStatus();
+            } else {
+                spinnerOff();
+                return;    
+            }
+        });
+    }, 2000);
 }
 
 function ParentSelected() {
@@ -174,10 +196,6 @@ function addMapping(header, metadata) {
 
     spinnerOff();
 } //add mapping
-
-
-
-
 
 function loadList(sfdcObjects) {
     fs.readFile('frontend/list.html', (err, data) => {
@@ -341,4 +359,13 @@ function parseFile(event) {
 
     console.info(data);
     console.info(JSON.stringify(data));
+
+    spinnerOn();
+    connection.send("parse", JSON.stringify(data), (err, response) => {
+
+        log("Parse file starting...");
+        if (err) logError("Something very bad happen!", err);
+        log(response);
+        checkStatus();
+    });
 }

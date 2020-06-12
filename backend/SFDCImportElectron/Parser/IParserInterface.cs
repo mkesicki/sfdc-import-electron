@@ -7,6 +7,9 @@ namespace SFDCImportElectron.Parser
     {
         Dictionary<String, String> Row { get; set; }
         public Dictionary<int, string> Header { get; set; }
+        public Boolean isInProgress { get; set; }
+
+        public int Size { get; set; }
 
         int Success { get; set; }
         int Error { get; set; }
