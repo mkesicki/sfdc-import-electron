@@ -63,19 +63,16 @@ namespace SFDCImportElectron.Parser
             sfdcs.Add(Sfdc);
             GetHeader();
 
-            //Sfdc.SetMapping(mapping, Header);
-
-
             sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
 
-            //clone salesforce instances
-            for (int i = 0; i < Cores - 1; i++)
-            {
-                sfdcs.Add((Salesforce.Salesforce)Sfdc.Clone());
-            }
+            ////clone salesforce instances
+            //for (int i = 0; i < Cores - 1; i++)
+            //{
+            //    sfdcs.Add((Salesforce.Salesforce)Sfdc.Clone());
+            //}
 
-            //prepare copies of files for threads
-            PrepareFileToParse();
+            ////prepare copies of files for threads
+            //PrepareFileToParse();
         }
 
         private void ParseFile(Object core)
@@ -103,8 +100,17 @@ namespace SFDCImportElectron.Parser
             }
         }
 
-        public void Parse()
+        async public void Parse()
         {
+            //clone salesforce instances
+            for (int i = 0; i < Cores - 1; i++)
+            {
+                sfdcs.Add((Salesforce.Salesforce)sfdcs[0].Clone());
+            }
+
+            //prepare copies of files for threads
+            PrepareFileToParse();
+
             for (int i = 0; i < Cores; i++)
             {
                 ParameterizedThreadStart start = new ParameterizedThreadStart(ParseFile);
