@@ -20,7 +20,8 @@ namespace SFDCImportElectron.Model
 
         public Mapping find(string key)
         {
-            foreach (Mapping map in mapping) {
+            foreach (Mapping map in mapping)
+            {
                 if (map.from.ToLower() == key.ToLower()) return map;
             }
 

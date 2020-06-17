@@ -1,11 +1,11 @@
-﻿using System;
-using ElectronCgi.DotNet;
-using System.IO;
+﻿using ElectronCgi.DotNet;
 using Newtonsoft.Json;
 using SFDCImportElectron.Logger;
-using SFDCImportElectron.Parser;
-using System.Collections.Generic;
 using SFDCImportElectron.Model;
+using SFDCImportElectron.Parser;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SFDCImportElectron
@@ -42,7 +42,7 @@ namespace SFDCImportElectron
                                 .Build();
 
             // expects a request named "greeting" with a string argument and returns a string
-            connection.On<string, string>("login", data  =>
+            connection.On<string, string>("login", data =>
             {
                 /**
              * client_id
@@ -65,7 +65,7 @@ namespace SFDCImportElectron
                 String Username = args[0];
                 String Password = args[1];
                 String ClientID = args[2];
-                String ClientSecret = args[3];                
+                String ClientSecret = args[3];
                 String LoginUrl = args[4];
                 csv = args[5];
 
@@ -108,13 +108,15 @@ namespace SFDCImportElectron
             });
 
 
-            connection.On<string>("getHeaderRow", () => {
+            connection.On<string>("getHeaderRow", () =>
+            {
 
                 return serializer.Serialize(parser.Header.Values.ToList());
 
             });
 
-            connection.On<string, string>("getMetadata", fields => {
+            connection.On<string, string>("getMetadata", fields =>
+            {
 
                 string[] args = JsonConvert.DeserializeObject<string[]>(fields);
 
@@ -128,7 +130,8 @@ namespace SFDCImportElectron
                 return serializer.Serialize(data);
             });
 
-            connection.On<string, string>("parse", mapping => {
+            connection.On<string, string>("parse", mapping =>
+            {
 
                 //parser = new CSVThread(csv, Logger, SFDC);
 
@@ -139,7 +142,8 @@ namespace SFDCImportElectron
 
             });
 
-            connection.On<string>("getStatus", () => {
+            connection.On<string>("getStatus", () =>
+            {
 
 
                 bool ready = parser.IsReady();
@@ -157,7 +161,7 @@ namespace SFDCImportElectron
                 response.Add("processed", parser.Processed.ToString());
 
                 return serializer.Serialize(response);
-            }); 
+            });
 
             // wait for incoming requests
             connection.Listen();
@@ -176,7 +180,7 @@ namespace SFDCImportElectron
                 "--password saleforce password \n" +
                 "--login_url - saleforce login instance url \n" +
                 "--path - path to CSV file \n"
-             );            
+             );
         }
     }
 }

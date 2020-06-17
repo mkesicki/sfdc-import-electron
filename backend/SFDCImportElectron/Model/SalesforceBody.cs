@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace SFDCImportElectron.Model
 {
@@ -8,11 +6,13 @@ namespace SFDCImportElectron.Model
     {
         public List<Record> records { get; set; }
 
-        public SalesforceBody() {
+        public SalesforceBody()
+        {
             records = new List<Record>();
         }
 
-        public SalesforceBody(Record record) {
+        public SalesforceBody(Record record)
+        {
             records = new List<Record> { record };
         }
     }

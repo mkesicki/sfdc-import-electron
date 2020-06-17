@@ -20,7 +20,7 @@ namespace SFDCImportElectron.Parser
         private int Cores { get; set; }
         public int Size { get; set; }
 
-        public int Processed { get { return _Processed; }  set {_Processed = value; } }
+        public int Processed { get { return _Processed; } set { _Processed = value; } }
         public int BatchSize { get; set; }
         public int MinimumThreadSize { get; set; }
 
@@ -33,7 +33,7 @@ namespace SFDCImportElectron.Parser
         private List<Thread> Threads = new List<Thread>();
         private List<Salesforce.Salesforce> sfdcs { get; set; }
 
-        public Boolean isInProgress  { get; set;}
+        public Boolean isInProgress { get; set; }
 
         public volatile int _Processed;
 
@@ -89,7 +89,7 @@ namespace SFDCImportElectron.Parser
                     String[] data = message.Split(",");
 
                     //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
-                     sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
+                    sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
                     //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
                     Interlocked.Increment(ref _Processed);
@@ -97,7 +97,8 @@ namespace SFDCImportElectron.Parser
             }
         }
 
-        public bool IsReady() {
+        public bool IsReady()
+        {
 
             bool workersActive = true;
 
@@ -109,22 +110,22 @@ namespace SFDCImportElectron.Parser
                     sfdcs[i].flush();
                     count++;
                 }
-            }            
+            }
 
-            if (count == Cores ) { workersActive = false; }
+            if (count == Cores) { workersActive = false; }
 
             if (workersActive == false)
             {
                 isInProgress = false;
                 Logger.Save();
 
-                return true;               
+                return true;
             }
 
             return false;
         }
 
-        public void  Parse()
+        public void Parse()
         {
             //clone salesforce instances
             for (int i = 0; i < Cores - 1; i++)
@@ -141,7 +142,7 @@ namespace SFDCImportElectron.Parser
                 Thread t = new Thread(start);
                 t.Start(i);
                 Threads.Add(t);
-            }          
+            }
         }
 
         private void PrepareFileToParse()
@@ -170,12 +171,13 @@ namespace SFDCImportElectron.Parser
             string[] labels = header.Split(',');
             int i = 0;
 
-            foreach (String label in labels) {
+            foreach (String label in labels)
+            {
 
                 Header.Add(i, label);
                 i++;
             }
-          
+
             return Header;
         }
 

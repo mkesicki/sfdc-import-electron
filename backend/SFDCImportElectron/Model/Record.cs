@@ -11,7 +11,8 @@ namespace SFDCImportElectron.Model
 
         public Dictionary<string, SalesforceBody> children { get; set; }
 
-        public Record() {
+        public Record()
+        {
             attributes = new Dictionary<string, string>();
             fields = new Dictionary<string, object>();
             children = new Dictionary<string, SalesforceBody>();

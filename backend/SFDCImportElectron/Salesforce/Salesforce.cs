@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RestSharp;
-using System.Threading.Tasks;
+using SFDCImportElectron.Converter;
 using SFDCImportElectron.Logger;
 using SFDCImportElectron.Model;
 using SFDCImportElectron.Response;
@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Authentication;
-using SFDCImportElectron.Converter;
-using System.Threading.Tasks;
 using System.Threading;
 
 namespace SFDCImportElectron.Salesforce
@@ -146,20 +144,23 @@ namespace SFDCImportElectron.Salesforce
                 }
             }
 
-            RestSharp.Serialization.Json.JsonSerializer  serializer = new RestSharp.Serialization.Json.JsonSerializer();
+            RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
             String json = serializer.Serialize(Mapping);
         }
 
-        public void PreparePayload(String[] data, int line) {
+        public void PreparePayload(String[] data, int line)
+        {
 
             Dictionary<string, Dictionary<string, object>> body = new Dictionary<string, Dictionary<string, object>>();
             Record parent = new Record();
 
             int i = 0;
-            foreach (String value in data) {
+            foreach (String value in data)
+            {
 
                 //only if field was mapped
-                if (Mapping.ContainsKey(i)) {
+                if (Mapping.ContainsKey(i))
+                {
                     MappingPayload.Mapping map = Mapping[i];
 
                     Dictionary<string, object> dataset = new Dictionary<string, object>();
@@ -181,9 +182,9 @@ namespace SFDCImportElectron.Salesforce
             parent.attributes.Add("referenceId", ParentObject + line.ToString());
 
             RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
-          
+
             parent.fields = body[ParentObject];
-          
+
             List<Record> records = new List<Record>();
             SalesforceBody children = new SalesforceBody();
 
@@ -222,7 +223,7 @@ namespace SFDCImportElectron.Salesforce
             request.AddJsonBody(jsonBody);
 
             Thread.Sleep(500);
-            IRestResponse response = await Client.ExecutePostAsync(request);         
+            IRestResponse response = await Client.ExecutePostAsync(request);
 
             RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
 
@@ -237,7 +238,7 @@ namespace SFDCImportElectron.Salesforce
             else if (HttpStatusCode.BadRequest == response.StatusCode)
             {
                 ErrorResponse errors = deserializer.Deserialize<ErrorResponse>(response);
-               
+
                 foreach (ResultError result in errors.results)
                 {
                     String message = "";
@@ -253,21 +254,25 @@ namespace SFDCImportElectron.Salesforce
 
                     message = message.Substring(0, message.Length - 1) + "]";
                     Logger.Error(message);
-                }                
+                }
             }
         }
 
-        public Dictionary<String, List<String>> getMetadata() {
+        public Dictionary<String, List<String>> getMetadata()
+        {
 
-            Dictionary<string, List<String >> results = new Dictionary<string, List<String>>();
+            Dictionary<string, List<String>> results = new Dictionary<string, List<String>>();
 
-            foreach (KeyValuePair<string, Metadata> meta in Meta) {
+            foreach (KeyValuePair<string, Metadata> meta in Meta)
+            {
 
                 List<string> fields = new List<string>();
 
-                foreach (Field field in meta.Value.fields) {
+                foreach (Field field in meta.Value.fields)
+                {
 
-                    if (field.updateable) {
+                    if (field.updateable)
+                    {
                         fields.Add(field.name);
                     }
                 }

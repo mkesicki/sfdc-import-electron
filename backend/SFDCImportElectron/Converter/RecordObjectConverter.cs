@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
 using SFDCImportElectron.Model;
+using System;
 
 namespace SFDCImportElectron.Converter
 {
@@ -11,7 +9,7 @@ namespace SFDCImportElectron.Converter
     {
         public override Record Create(Type objectType)
         {
-            return new Record();            
+            return new Record();
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

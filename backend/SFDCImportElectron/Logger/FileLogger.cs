@@ -47,7 +47,7 @@ namespace SFDCImportElectron.Logger
         {
             String s = String.Format("![#000000] {0}: {1} \n", DateTime.Now, message);
             AddMessage(s);
-         
+
         }
         public void Warning(string message)
         {
@@ -112,6 +112,6 @@ namespace SFDCImportElectron.Logger
         {
             Filepath = path;
             Text = Message;
-        }     
+        }
     }
 }

@@ -19,5 +19,5 @@ namespace SFDCImportElectron.Parser
         public void Parse();
 
         public bool IsReady();
-    }  
+    }
 }
