@@ -73,7 +73,9 @@ function logError(title, error) {
     throw new Error();
 }
 
-function checkStatus() {
+function checkStatus(immediate) {
+
+    let wait = (immediate) ? 1 : 1000;
 
     setTimeout(() => {
 
@@ -84,16 +86,15 @@ function checkStatus() {
             data = JSON.parse(response);
             console.log(response);
 
-            log(`Processing ${data.all} rows: ${data.success} success / ${data.error} errors`);
-            console.info(data.inProgress);
-            if (data.inProgress === "True") {
-                checkStatus();
-            } else {
+            log(`Processing ${data.processed} of ${data.all} rows`);
+            if (data.isReady === "True") {
                 spinnerOff();
-                return;    
+                return;
+            } else {
+                checkStatus();
             }
         });
-    }, 2000);
+    }, wait);
 }
 
 function ParentSelected() {
@@ -365,7 +366,6 @@ function parseFile(event) {
 
         log("Parse file starting...");
         if (err) logError("Something very bad happen!", err);
-        log(response);
-        checkStatus();
+        checkStatus(true);
     });
 }

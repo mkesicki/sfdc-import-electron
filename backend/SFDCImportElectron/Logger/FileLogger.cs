@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Threading;
 
 namespace SFDCImportElectron.Logger
 {
@@ -10,7 +11,13 @@ namespace SFDCImportElectron.Logger
 
         public BlockingCollection<LogMessage> _logErrors = new BlockingCollection<LogMessage>();
 
+        public volatile int _Success;
+        public volatile int _Errors;
+
         private String PathSuccess, PathError;
+
+        public int Success { get { return _Success; } set { _Success = value; } }
+        public int Errors { get { return _Errors; } set { _Errors = value; } }
 
         public FileLogger(String Dir)
         {
@@ -31,12 +38,16 @@ namespace SFDCImportElectron.Logger
             {
                 File.Delete(PathError);
             }
+
+            _Errors = 0;
+            _Success = 0;
         }
 
         public void Info(string message)
         {
             String s = String.Format("![#000000] {0}: {1} \n", DateTime.Now, message);
             AddMessage(s);
+         
         }
         public void Warning(string message)
         {
@@ -83,19 +94,13 @@ namespace SFDCImportElectron.Logger
         private void AddMessage(String Message)
         {
             _logMessages.Add(new LogMessage(PathSuccess, Message));
+            Interlocked.Increment(ref _Success);
         }
 
         private void AddError(String Message)
         {
             _logErrors.Add(new LogMessage(PathError, Message));
-        }
-
-        public int getErrorSize()
-        {
-            return _logErrors.Count;
-        }
-        public int getSucessSize() {
-            return _logMessages.Count;
+            Interlocked.Increment(ref _Errors);
         }
     }
     public class LogMessage

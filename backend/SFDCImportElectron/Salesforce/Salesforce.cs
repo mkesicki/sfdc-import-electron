@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RestSharp;
+using System.Threading.Tasks;
 using SFDCImportElectron.Logger;
 using SFDCImportElectron.Model;
 using SFDCImportElectron.Response;
@@ -8,6 +9,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Authentication;
 using SFDCImportElectron.Converter;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SFDCImportElectron.Salesforce
 {
@@ -57,7 +60,6 @@ namespace SFDCImportElectron.Salesforce
 
         public void Login()
         {
-
             Client = new RestClient(LoginUrl);
 
             RestRequest request = new RestRequest(LoginUrl + "/services/oauth2/token", Method.POST);
@@ -178,23 +180,10 @@ namespace SFDCImportElectron.Salesforce
             parent.attributes.Add("type", ParentObject);
             parent.attributes.Add("referenceId", ParentObject + line.ToString());
 
-
             RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
-            String x = serializer.Serialize(body);
-
-
-            //Console.WriteLine(x);
-         
-
-            try
-            {
-                parent.fields = body[ParentObject];
-            }
-            catch (Exception e) {
-                Console.WriteLine(x);
-                Console.WriteLine("wtf: " + ParentObject);
-                throw e;
-            }
+          
+            parent.fields = body[ParentObject];
+          
             List<Record> records = new List<Record>();
             SalesforceBody children = new SalesforceBody();
 
@@ -217,12 +206,12 @@ namespace SFDCImportElectron.Salesforce
             if (this.body.records.Count >= BatchSize) flush();
         }
 
-        public void flush()
+        public async void flush()
         {
             if (body.records.Count == 0) return;
 
             String jsonBody = JsonConvert.SerializeObject(body, Formatting.None, new RecordObjectConverter());
-            //Console.WriteLine("Send to SFDC: " + jsonBody);
+            body = new SalesforceBody();
 
             String Url = InstanceUrl + "/services/data/" + ApiVersion + "/composite/tree/" + ParentObject;
 
@@ -232,9 +221,8 @@ namespace SFDCImportElectron.Salesforce
 
             request.AddJsonBody(jsonBody);
 
-            IRestResponse response = Client.Execute(request);
-
-            body = new SalesforceBody();
+            Thread.Sleep(500);
+            IRestResponse response = await Client.ExecutePostAsync(request);         
 
             RestSharp.Serialization.Json.JsonDeserializer deserializer = new RestSharp.Serialization.Json.JsonDeserializer();
 
@@ -249,13 +237,14 @@ namespace SFDCImportElectron.Salesforce
             else if (HttpStatusCode.BadRequest == response.StatusCode)
             {
                 ErrorResponse errors = deserializer.Deserialize<ErrorResponse>(response);
-                String message = "";
+               
                 foreach (ResultError result in errors.results)
                 {
+                    String message = "";
                     message = String.Format("Object Reference: {0} has errors: ", result.referenceId);
                     foreach (Error error in result.errors)
                     {
-                        message = message + error.message + " for fiedds [";
+                        message = message + error.message + " for fields [";
                         foreach (String errorMessage in error.fields)
                         {
                             message = message + errorMessage + ",";
@@ -263,8 +252,8 @@ namespace SFDCImportElectron.Salesforce
                     }
 
                     message = message.Substring(0, message.Length - 1) + "]";
-                }
-                Logger.Error(message);
+                    Logger.Error(message);
+                }                
             }
         }
 

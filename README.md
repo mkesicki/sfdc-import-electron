@@ -17,4 +17,7 @@ TODOs:
 - Add user's a chance to change mind during mapping of fields
 - Set Batch size correctly related to number of child objects
 - Maybe minimum number of rows to parse in threads should be a config param
-- there need to be a parent selected... 
+- there need to be a parent selected...
+- think about better handling salesforce limit for concurrent request
+- figure out wrong counting of success and errors rows
+- Restart / take steps back in GUI

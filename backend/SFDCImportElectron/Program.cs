@@ -26,6 +26,15 @@ namespace SFDCImportElectron
 
         static void Main()
         {
+
+
+            //String mapping = "{\"parent\":\"Account\",\"mapping\":[{\"from\":\"AName\",\"toObject\":\"Account\",\"toColumn\":\"Name\"},{\"from\":\"StageName\",\"toObject\":\"Opportunity\",\"toColumn\":\"StageName\"},{\"from\":\"CloseDate\",\"toObject\":\"Opportunity\",\"toColumn\":\"CloseDate\"},{\"from\":\"OName\",\"toObject\":\"Opportunity\",\"toColumn\":\"Name\"}]}";
+            //FileLogger Logger = new FileLogger("logs");
+            //SFDC = new Salesforce.Salesforce("3MVG91BJr_0ZDQ4tOAfzh.FvRVMjEdoK2rESiJ_ZFQtjuO3CnQyIT1m3U5TTh18JzZXzuCwDRVAJx5Ato8GVh", "DECB52F10FEAA5AECAF2930F78560DB21E18A7C7A0F02191DC5C1E52AE85AD68", "michal.kesicki2@cunning-fox-tgor5q.com", "Qfw5NukCUT3f6uU", "https://login.salesforce.com", Logger);
+            //parser = new CSVThread(@"C:\Users\Michal\source\repos\sfdc-import-electron\data.csv", Logger, SFDC);
+            //SFDC.SetMapping(mapping, parser.Header);
+            //parser.Parse();
+            //Environment.Exit(0);
             serializer = new RestSharp.Serialization.Json.JsonSerializer();
 
             var connection = new ConnectionBuilder()
@@ -132,18 +141,20 @@ namespace SFDCImportElectron
 
             connection.On<string>("getStatus", () => {
 
+
+                bool ready = parser.IsReady();
+
                 Dictionary<string, string> response = new Dictionary<string, string>();
 
                 //Boolean x = false;
-                //response.Add("inProgress", x.ToString());
+                //response.Add("isReady", x.ToString());
                 //response.Add("all", "100");
                 //response.Add("error", "10");
                 //response.Add("success", "90");
 
-                response.Add("inProgress", parser.isInProgress.ToString());
-                response.Add("add", parser.Size.ToString());
-                response.Add("error", Logger.getErrorSize().ToString());
-                response.Add("success", Logger.getSucessSize().ToString());
+                response.Add("isReady", ready.ToString());
+                response.Add("all", parser.Size.ToString());
+                response.Add("processed", parser.Processed.ToString());
 
                 return serializer.Serialize(response);
             }); 

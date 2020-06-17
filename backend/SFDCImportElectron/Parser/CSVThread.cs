@@ -19,6 +19,8 @@ namespace SFDCImportElectron.Parser
         public string Path { get; set; }
         private int Cores { get; set; }
         public int Size { get; set; }
+
+        public int Processed { get { return _Processed; }  set {_Processed = value; } }
         public int BatchSize { get; set; }
         public int MinimumThreadSize { get; set; }
 
@@ -33,6 +35,8 @@ namespace SFDCImportElectron.Parser
 
         public Boolean isInProgress  { get; set;}
 
+        public volatile int _Processed;
+
 
         public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc /*, String mapping*/)
         {
@@ -44,6 +48,7 @@ namespace SFDCImportElectron.Parser
             sfdcs = new List<Salesforce.Salesforce>();
             MinimumThreadSize = 1000;
             isInProgress = false;
+            _Processed = 0;
 
             this.Logger = Logger;
 
@@ -64,15 +69,6 @@ namespace SFDCImportElectron.Parser
             GetHeader();
 
             sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
-
-            ////clone salesforce instances
-            //for (int i = 0; i < Cores - 1; i++)
-            //{
-            //    sfdcs.Add((Salesforce.Salesforce)Sfdc.Clone());
-            //}
-
-            ////prepare copies of files for threads
-            //PrepareFileToParse();
         }
 
         private void ParseFile(Object core)
@@ -93,14 +89,42 @@ namespace SFDCImportElectron.Parser
                     String[] data = message.Split(",");
 
                     //Console.WriteLine(String.Format("cpu#{0} {1}", cpu, message));
-                    sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
+                     sfdcs[cpu].PreparePayload(data, line + this.startLine[cpu]);
                     //Logger.Info(String.Format("cpu#{0}: {1}", cpu, message));
                     line++;
+                    Interlocked.Increment(ref _Processed);
                 }
             }
         }
 
-        async public void Parse()
+        public bool IsReady() {
+
+            bool workersActive = true;
+
+            int count = 0;
+            for (int i = 0; i < Cores; i++)
+            {
+                if (Threads[i].IsAlive == false)
+                {
+                    sfdcs[i].flush();
+                    count++;
+                }
+            }            
+
+            if (count == Cores ) { workersActive = false; }
+
+            if (workersActive == false)
+            {
+                isInProgress = false;
+                Logger.Save();
+
+                return true;               
+            }
+
+            return false;
+        }
+
+        public void  Parse()
         {
             //clone salesforce instances
             for (int i = 0; i < Cores - 1; i++)
@@ -117,28 +141,7 @@ namespace SFDCImportElectron.Parser
                 Thread t = new Thread(start);
                 t.Start(i);
                 Threads.Add(t);
-            }
-
-            bool loop = true;
-
-            while (loop)
-            {
-                int count = 0;
-                for (int i = 0; i < Cores; i++)
-                {
-                    if (Threads[i].IsAlive == false)
-                    {
-                        sfdcs[i].flush();
-                        count++;
-                    }
-                }
-                if (count == Cores) { loop = false; }
-            }
-
-            isInProgress = false;
-            Logger.Save();
-
-            return;
+            }          
         }
 
         private void PrepareFileToParse()
