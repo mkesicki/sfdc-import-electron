@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/mkesicki/sfdc-import-electron#readme",
   "devDependencies": {
-    "electron": "^8.2.3"
+    "electron": "^8.2.4"
   },
   "dependencies": {
     "electron-cgi": "^1.0.4"
