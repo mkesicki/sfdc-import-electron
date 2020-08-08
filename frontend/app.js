@@ -124,6 +124,14 @@ function dropHandler(ev) {
     var span2 = document.createElement("span");
     span2.textContent = " (Delete) ";
     span2.classList.add('removeMapping');
+    span2.addEventListener("click", (event) => {
+
+        const id = event.target.parentNode.children[0].getAttribute("id");
+        event.target.parentNode.innerHTML = "";
+
+        sourceElement = document.getElementById(id);
+        sourceElement.parentNode.classList.remove("hide");
+    });
     
     ev.target.appendChild(span);
     ev.target.appendChild(span2)
@@ -501,3 +509,4 @@ function parseFromFile(fileContent) {
         targetElement.innerHTML = html;
     });
 }
+

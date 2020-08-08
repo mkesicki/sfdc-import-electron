@@ -18,6 +18,3 @@ TODOs:
 - Restart / take steps back in GUI
 - Add some menu
 - As always error handling
-
-
-- Add user's a chance to change mind during mapping of fields (delete selected mapping)
