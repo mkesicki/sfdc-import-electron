@@ -1,7 +1,12 @@
-//// JavaScript source code
+// JavaScript source code
 
 const { ConnectionBuilder } = require('electron-cgi');
-const fs = require('fs')
+const fs = require('fs');
+
+const electron = window.electron;
+const { remote } = electron
+const dialog = remote.dialog;
+const WIN = remote.getCurrentWindow();
 
 var connection = new ConnectionBuilder()
     .connectTo("dotnet", "run", "--project", "backend/SFDCImportElectron")
@@ -331,8 +336,7 @@ function login() {
     });
 }
 
-
-function parseFile(event) {
+function createMapping() {
 
     var data = {};
     var children = [];
@@ -369,6 +373,13 @@ function parseFile(event) {
     console.info(data);
     console.info(JSON.stringify(data));
 
+    return data;
+}
+
+function parseFile(event) {
+
+    data = createMapping();
+
     spinnerOn();
     connection.send("parse", JSON.stringify(data), (err, response) => {
 
@@ -377,4 +388,42 @@ function parseFile(event) {
         if (err) logError("Something very bad happen!", err);
         checkStatus(true);
     });
+}
+
+function saveFile(event) {
+
+    let options = {
+
+        title: "Save mapping file",
+
+        //Placeholder 2
+        defaultPath: `${__dirname}/../mapping.json`, //"C:\\BrainBell.png",
+
+        //Placeholder 4
+        buttonLabel: "Save Mapping File",
+
+        //Placeholder 3
+        filters: [
+            { name: 'Mapping json', extensions: ['json'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    }
+
+    dialog.showSaveDialog(WIN, options)
+        .then(file => {
+
+            console.log(file);
+            if (!file.canceled) {
+                data = createMapping();
+                fs.writeFile(file.filePath.toString(),
+                    JSON.stringify(data), function (err) {
+                        if (err) throw err;
+                        console.log(file);
+                        log("Mapping saved in: " + file.filePath.toString());
+                    });
+            } 
+        }).catch(err => {
+            log("File saving error!");
+            console.log(err)
+        })
 }

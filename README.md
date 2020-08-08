@@ -17,6 +17,6 @@ TODOs:
 - Figure out wrong counting of success and errors rows
 - Restart / take steps back in GUI
 - Add some menu
-- Save and load mapping
 
+- Save and load mapping
 - Add user's a chance to change mind during mapping of fields (delete selected mapping)

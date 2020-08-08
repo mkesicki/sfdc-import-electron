@@ -3,6 +3,7 @@
 
 
 const { app, BrowserWindow, systemPreferences } = require('electron')
+const path = require("path");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -10,13 +11,17 @@ let mainWindow
 
 
 function createWindow() {
+
+    console.log(`${__dirname}/app.js`);
     // Create the browser window.
     mainWindow = new BrowserWindow({
         minWidth: 1024,
         minHeight: 768,
         webPreferences: {
-            nodeIntegration: true
-        }
+            nodeIntegration: true,
+            preload: path.join(__dirname, "preload.js") // use a preload script
+        },
+        
     })
 
     // and load the index.html of the app.
@@ -60,5 +65,3 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-
-

@@ -1,19 +1,23 @@
 ﻿<div id="map-sfdc-objects">
     <div>Prepare mapping</div>
 
-    <div style="margin-top:10px;">Existing objects:
+    <div style="margin-top:10px;">
+        Existing objects:
         <form id="sfdc-objects">
             <div id="sfdc-objects-container">
 
             </div>
         </form>
     </div>
-    <div style="margin-top:10px;">Objects from file:
+    <div style="margin-top:10px;">
+        Objects from file:
         <form id="file-objects">
             <table id="file-objects-table" style="margin-top:10px;">
                 <thead><tr><th>Column Name</th><th>Mapped to</th></tr></thead>
             </table>
         </form>
     </div>
+    <button id="saveFile" onclick="saveFile(event)" name="saveFile" />Save mapping
+    <button id="saveFile" onclick="saveFile(event)" name="loadFile" />Load mapping from file
     <button id="parseFile" onclick="parseFile(event)" name="parseFile" />Parse file
 </div>
