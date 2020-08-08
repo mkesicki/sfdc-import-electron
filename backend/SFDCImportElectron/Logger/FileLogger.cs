@@ -63,20 +63,13 @@ namespace SFDCImportElectron.Logger
 
         private void SaveLog(BlockingCollection<LogMessage> logs)
         {
-
-            if (0 == logs.Count)
-            {
-                return;
-            }
+            if (0 == logs.Count) return;
 
             //Console.WriteLine("Store log: {0} entries", logs.Count);
             foreach (LogMessage msg in logs.GetConsumingEnumerable())
             {
                 File.AppendAllText(msg.Filepath, msg.Text);
-                if (logs.IsCompleted || logs.Count == 0)
-                {
-                    break;
-                }
+                if (logs.IsCompleted || logs.Count == 0) break;
             }
         }
 

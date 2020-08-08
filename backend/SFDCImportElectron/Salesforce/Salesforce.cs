@@ -15,7 +15,9 @@ namespace SFDCImportElectron.Salesforce
     class Salesforce : ICloneable
     {
         private readonly String ApiVersion = "v48.0"; //yeah, config variable
-        public int BatchSize { get; set; }
+
+        public static int BatchSize = 200;
+        public readonly int maxRecords = 200;
         private String Token { get; set; }
         private String ClientId { get; set; }
         private String ClientSecret { get; set; }
@@ -34,7 +36,6 @@ namespace SFDCImportElectron.Salesforce
         {
             Salesforce clone = new Salesforce(ClientId, ClientSecret, Username, Password, LoginUrl, Logger);
             clone.Meta = this.Meta;
-            clone.BatchSize = this.BatchSize;
             clone.ParentObject = this.ParentObject;
             clone.Mapping = this.Mapping;
 
@@ -50,7 +51,6 @@ namespace SFDCImportElectron.Salesforce
             this.LoginUrl = LoginUrl;
             this.Logger = Logger;
             this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
-            this.BatchSize = 100; //@TODO make it valid
 
             Meta = new Dictionary<String, Metadata>();
             Login();
@@ -126,9 +126,8 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public void SetMapping(String jsonBody, Dictionary<int, string> Header)
+        public int SetMapping (String jsonBody, Dictionary<int, string> Header)
         {
-
             MappingPayload tmp = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
             ParentObject = tmp.parent;
 
@@ -144,8 +143,9 @@ namespace SFDCImportElectron.Salesforce
                 }
             }
 
-            RestSharp.Serialization.Json.JsonSerializer serializer = new RestSharp.Serialization.Json.JsonSerializer();
-            String json = serializer.Serialize(Mapping);
+            BatchSize = (int)this.maxRecords / tmp.size;
+
+            return BatchSize;
         }
 
         public void PreparePayload(String[] data, int line)

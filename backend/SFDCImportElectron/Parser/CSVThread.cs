@@ -7,12 +7,10 @@ using System.Threading;
 
 namespace SFDCImportElectron.Parser
 {
-    class CSVThread :
-        IParserInterface
+    class CSVThread : IParserInterface
     {
         public Dictionary<string, string> Row { get; set; }
         public Dictionary<int, string> Header { get; set; }
-
         public List<string> Columns { get; set; }
         public int Success { get; set; }
         public int Error { get; set; }
@@ -32,13 +30,11 @@ namespace SFDCImportElectron.Parser
 
         private List<Thread> Threads = new List<Thread>();
         private List<Salesforce.Salesforce> sfdcs { get; set; }
-
         public Boolean isInProgress { get; set; }
 
         public volatile int _Processed;
 
-
-        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc /*, String mapping*/)
+        public CSVThread(String Path, ILoggerInterface Logger, Salesforce.Salesforce Sfdc)
         {
             Header = new Dictionary<int, string>();
             Columns = new List<string>();
@@ -67,13 +63,10 @@ namespace SFDCImportElectron.Parser
             //get Header
             sfdcs.Add(Sfdc);
             GetHeader();
-
-            sfdcs[0].BatchSize = Sfdc.BatchSize; //configure batch size according to number of relations @TODO implement it somehow
         }
 
         private void ParseFile(Object core)
         {
-
             int cpu = (int)core;
             int line = 0;
             Dictionary<String, Dictionary<String, String>> payload = new Dictionary<String, Dictionary<String, String>>();

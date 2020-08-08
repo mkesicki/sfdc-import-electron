@@ -3,21 +3,21 @@
 This is just a fun project to check how to work with Electron.
 The idea behind is to create GUI for https://github.com/mkesicki/sfdc-import
 Do not use it on production :)
+If you see any login data in code there are for trailhead ...
 
 TODOs:
-- Any validation of data might be nice to have :)
+- Correct OAuth login
 - Add Drag & Drop for file
-- Add some spinner etc to show that work is in progress
-- Think about some progress bar
-- If you see any login data in code there are for trailhead ...
-- Block the form(s) when spinner is .... spinning :)
+- Block the form(s)/UI when spinner is .... spinning :)
 - Proper/better way to load windows/files
 - Yes, design I know :)
 - Improve search event, now it works on change event which is not most user friendly
-- Add user's a chance to change mind during mapping of fields
-- Set Batch size correctly related to number of child objects
-- Maybe minimum number of rows to parse in threads should be a config param
-- there need to be a parent selected...
-- think about better handling salesforce limit for concurrent request
-- figure out wrong counting of success and errors rows
+- Add log message when logs are saved
+- Think about better handling salesforce limit for concurrent request
+- Figure out wrong counting of success and errors rows
 - Restart / take steps back in GUI
+- Add some menu
+- Save and load mapping
+
+- Add user's a chance to change mind during mapping of fields (delete selected mapping)
+- Set Batch size correctly related to number of child objects

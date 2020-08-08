@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFDCImportElectron", "SFDCI
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D18CCC44-6FF7-4C7B-AD90-2B353676E860}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\frontend\connection.js = ..\..\frontend\connection.js
+		..\..\.editorconfig = ..\..\.editorconfig
+		..\..\.gitignore = ..\..\.gitignore
+		..\..\frontend\app.js = ..\..\frontend\app.js
 		..\..\frontend\dark.css = ..\..\frontend\dark.css
 		..\..\frontend\index.html = ..\..\frontend\index.html
 		..\..\frontend\light.css = ..\..\frontend\light.css
@@ -15,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\..\frontend\main.css = ..\..\frontend\main.css
 		..\..\frontend\main.js = ..\..\frontend\main.js
 		..\..\frontend\mapping.html = ..\..\frontend\mapping.html
+		..\..\package.json = ..\..\package.json
 		..\..\README.md = ..\..\README.md
 		Salesforce\Salesforce.cs = Salesforce\Salesforce.cs
 	EndProjectSection

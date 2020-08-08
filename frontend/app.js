@@ -339,6 +339,13 @@ function parseFile(event) {
 
     rows = document.querySelectorAll("#file-objects-table tr");
     parent = document.querySelector(".checkboxParent:checked");
+    columnsCount = document.querySelectorAll(".checkboxParent").length;
+
+    if (parent == null) {
+        alert("Please select parent object before start processing.");
+
+        return;
+    }
 
     for (var i = 0; i < rows.length; i++) {
 
@@ -356,6 +363,7 @@ function parseFile(event) {
         children.push(map);
     }
     data.parent = (parent) ? parent.value : null;
+    data.size = columnsCount;
     data.mapping = children;
 
     console.info(data);
@@ -365,6 +373,7 @@ function parseFile(event) {
     connection.send("parse", JSON.stringify(data), (err, response) => {
 
         log("Parse file starting...");
+        console.log(response);
         if (err) logError("Something very bad happen!", err);
         checkStatus(true);
     });
