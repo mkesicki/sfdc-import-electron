@@ -20,4 +20,3 @@ TODOs:
 - Save and load mapping
 
 - Add user's a chance to change mind during mapping of fields (delete selected mapping)
-- Set Batch size correctly related to number of child objects
