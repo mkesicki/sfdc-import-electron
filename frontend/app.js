@@ -120,11 +120,15 @@ function dropHandler(ev) {
     span.textContent = span.getAttribute('data-parent') + "." + span.textContent;
 
     ev.target.innerHTML = "";
-    ev.target.appendChild(span);
+
+    var span2 = document.createElement("span");
+    span2.textContent = " (Delete) ";
+    span2.classList.add('removeMapping');
     
-    //element.classList.add('hide');
-    element.parentElement.remove();
-    element.remove();
+    ev.target.appendChild(span);
+    ev.target.appendChild(span2)
+    
+    element.parentNode.classList.add('hide');
 }
 
 function dragoverHandler(ev) {
@@ -152,7 +156,7 @@ function addMapping(header, metadata) {
             container = document.getElementById("file-objects-table");
 
             var row = document.createElement('tr');
-            row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget'  ondrop='dropHandler(event)' ondragover='dragoverHandler(event)' >&nbsp;</td>"; //dropZone
+            row.innerHTML = "<td class='cellSource'>" + header[i] + "</td><td class='cellTarget " + header[i] + "'  ondrop='dropHandler(event)' ondragover='dragoverHandler(event)' >&nbsp;</td>"; //dropZone
             container.appendChild(row);
         }
 
@@ -183,7 +187,7 @@ function addMapping(header, metadata) {
             for (var j = 0; j < values.length; j++) {
                 var row = document.createElement('tr');
                 td = document.createElement("td");
-                td.innerHTML = "<td><span id='cell_" + i + "_" + j + "' data-parent='" + metadata[i].Key + "' class='draggableColumn' draggable='true' ondragstart='dragstartHandler(event)' >" + values[j] + "</span></td>";
+                td.innerHTML = "<td><span id='" + metadata[i].Key + "_" + values[j] + "' data-parent='" + metadata[i].Key + "' class='draggableColumn " + metadata[i].Key + "_" + values[j] + "' draggable='true' ondragstart='dragstartHandler(event)' >" + values[j] + "</span></td>";
                 td.classList.add('cellMetadata');
                 //td.setAttribute('data-parent', metadata[i].Key);
                 
@@ -358,11 +362,17 @@ function createMapping() {
         var map = {};
 
         to = rows[i].cells[1];
+        
+        
         column = to.textContent.split('.');
+        console.log(column);
 
         map.from = rows[i].cells[0].textContent;
         map.toObject = column[0];
         map.toColumn = column[1];
+        if (map.toColumn) {
+            map.toColumn = map.toColumn.replace(" (Delete) ", "");
+        }
 
         children.push(map);
     }
@@ -392,12 +402,12 @@ function parseFile(event) {
 
 function saveFile(event) {
 
-    let options = {
+    const options = {
 
         title: "Save mapping file",
 
         //Placeholder 2
-        defaultPath: `${__dirname}/../mapping.json`, //"C:\\BrainBell.png",
+        defaultPath: `${__dirname}/../mapping.json`,
 
         //Placeholder 4
         buttonLabel: "Save Mapping File",
@@ -426,4 +436,68 @@ function saveFile(event) {
             log("File saving error!");
             console.log(err)
         })
+}
+
+
+function loadFile(event) {
+
+    
+    const options = {
+
+        title: "Open mapping file",
+
+        //Placeholder 2
+        defaultPath: `${__dirname}/../mapping.json`,
+
+        //Placeholder 4
+        buttonLabel: "Open Mapping File",
+
+        //Placeholder 3
+        filters: [
+            { name: 'Mapping json', extensions: ['json'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    }
+
+    dialog.showOpenDialog(WIN, options)
+        .then(filePaths => {
+
+            console.log(filePaths);
+            fs.readFile(filePaths.filePaths[0], 'utf-8', (err, data) => {
+
+                if (err) {
+                    log("An error ocurred reading the file :" + err.message);
+                    console.log(err);
+                    return;
+                }
+
+                // handle the file content 
+                parseFromFile(JSON.parse(data))
+            })
+        }).catch(err => {
+            log("File opening error!");
+            console.log(err)
+        })    
+}
+
+function parseFromFile(fileContent) {
+    //parse the file
+    log("Parsing loaded mapping");
+    console.log(fileContent);
+    checkboxes = document.querySelectorAll(".checkboxParent").forEach(function (element) {
+        element.checked = (element.value == fileContent.parent) ? true : false;
+    });
+
+    fileContent.mapping.forEach(function (element) {
+        console.log(element);
+        sourceElement = document.querySelector("." + element.toObject + "_" + element.toColumn);
+        console.log(sourceElement);
+        sourceElement.parentNode.classList.add("hide");
+
+        targetElement = document.querySelector('.' + element.from);
+
+        html = "<td><span id='" + element.toObject + "_" + element.toColumn + "'data-parent='" + element.toObject + "' class='draggableColumn " + element.toObject + "_" + element.toColumn + "' draggable='true' ondragstart='dragstartHandler(event)' >" + element.toObject + "." + element.toColumn + "</span><span class='removeMapping'> (Delete) </span></td>";
+
+        targetElement.innerHTML = html;
+    });
 }
