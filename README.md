@@ -6,7 +6,6 @@ Do not use it on production :)
 If you see any login data in code there are for trailhead ...
 
 TODOs:
-- Correct OAuth login
 - Add Drag & Drop for file
 - Proper/better way to load windows/files
 - Yes, design I know :)
@@ -15,4 +14,6 @@ TODOs:
 - Restart / take steps back in GUI
 - Add some menu
 - As always error handling
-- Asyncsfdx force:auth:web:login logs saving?
+- Async logs saving?
+
+- Correct OAuth login
