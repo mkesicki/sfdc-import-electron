@@ -1,7 +1,7 @@
 // JavaScript source code
-
 const { ConnectionBuilder } = require('electron-cgi');
 const fs = require('fs');
+const UI = require('lockui');
 
 const electron = window.electron;
 const { remote } = electron
@@ -62,11 +62,13 @@ function search(query) {
 function spinnerOn() {
     document.getElementById("spinner").classList.remove("hide");
     document.getElementById("spinner").classList.add("spinner");
+    UI.lock({ text: 'Processing...' })
 }
 
 function spinnerOff() {
     document.getElementById("spinner").classList.remove("spinner");
     document.getElementById("spinner").classList.add("hide");
+    UI.unlock();
 }
 
 function logError(title, error) {

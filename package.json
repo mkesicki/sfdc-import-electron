@@ -27,6 +27,7 @@
     "electron": "^8.2.4"
   },
   "dependencies": {
-    "electron-cgi": "^1.0.4"
+    "electron-cgi": "^1.0.4",
+    "lockui": "^1.0.5"
   }
 }
