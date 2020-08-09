@@ -36,6 +36,8 @@ function parseObjectsList(sfdcObjects) {
 function search(query) {
 
     query = query.toLowerCase();
+    query = query.trim();
+    query = query.replace(/ /g, "");
 
     document.querySelectorAll(".checkbox").forEach(function (input) {
 
@@ -233,7 +235,7 @@ function loadList(sfdcObjects) {
         document.getElementById('main-container').innerHTML = data
         parseObjectsList(sfdcObjects);
 
-        document.getElementById("sfdc-objects-search-box").addEventListener("change", function () {
+        document.getElementById("sfdc-objects-search-box").addEventListener("keyup", function () {
             let value = this.value;
 
             if (value.length > 0 && value.length < 3) {

@@ -10,10 +10,9 @@ TODOs:
 - Add Drag & Drop for file
 - Proper/better way to load windows/files
 - Yes, design I know :)
-- Improve search event, now it works on change event which is not most user friendly
 - Think about better handling salesforce limit for concurrent request
 - Figure out wrong counting of success and errors rows
 - Restart / take steps back in GUI
 - Add some menu
 - As always error handling
-- Asyncsfdx force:auth:web:login logs saving? 
+- Asyncsfdx force:auth:web:login logs saving?
