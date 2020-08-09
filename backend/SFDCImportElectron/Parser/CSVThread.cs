@@ -110,7 +110,6 @@ namespace SFDCImportElectron.Parser
             if (workersActive == false)
             {
                 isInProgress = false;
-                Logger.Save();
 
                 return true;
             }

@@ -1,9 +1,7 @@
-// JavaScript source code
+const electron = window.electron;
 const { ConnectionBuilder } = require('electron-cgi');
 const fs = require('fs');
 const UI = require('lockui');
-
-const electron = window.electron;
 const { remote } = electron
 const dialog = remote.dialog;
 const WIN = remote.getCurrentWindow();
@@ -18,9 +16,9 @@ connection.onDisconnect = () => {
 };
 
 function log(message) {
-
     logArea = document.getElementById("log-messages");
     logArea.value = logArea.value + "\n" + message;
+    logArea.scrollTop = 99999;
 }
 
 function parseObjectsList(sfdcObjects) {
@@ -83,9 +81,8 @@ function logError(title, error) {
 function checkStatus(immediate) {
 
     let wait = (immediate) ? 1 : 1000;
-
-    setTimeout(() => {
-
+    
+    setTimeout(() => {        
         connection.send("getStatus", (err, response) => {
 
             if (err) logError("Caramba, something is not ok", err);
@@ -94,8 +91,19 @@ function checkStatus(immediate) {
             console.log(response);
 
             log(`Processing ${data.processed} of ${data.all} rows`);
+
             if (data.isReady === "True") {
-                spinnerOff();
+                //spinnerOff();
+                log("Saving logs (this make take a while, please be patient)...")
+                //save logs
+                connection.send("saveLogs", (err, response) => {
+
+                    if (err) logError("Caramba, something is wrong during logs saving", err);
+                    log("Logs saved");
+
+                    spinnerOff();
+                });
+
                 return;
             } else {
                 checkStatus();
@@ -399,13 +407,13 @@ function createMapping() {
 function parseFile(event) {
 
     data = createMapping();
-
+    log("Parse file starting...");
     spinnerOn();
     connection.send("parse", JSON.stringify(data), (err, response) => {
-
-        log("Parse file starting...");
-        console.log(response);
+        
         if (err) logError("Something very bad happen!", err);
+        console.log(response);
+        
         checkStatus(true);
     });
 }
@@ -415,14 +423,8 @@ function saveFile(event) {
     const options = {
 
         title: "Save mapping file",
-
-        //Placeholder 2
         defaultPath: `${__dirname}/../mapping.json`,
-
-        //Placeholder 4
         buttonLabel: "Save Mapping File",
-
-        //Placeholder 3
         filters: [
             { name: 'Mapping json', extensions: ['json'] },
             { name: 'All Files', extensions: ['*'] }
@@ -430,9 +432,7 @@ function saveFile(event) {
     }
 
     dialog.showSaveDialog(WIN, options)
-        .then(file => {
-
-            console.log(file);
+        .then(file => {            
             if (!file.canceled) {
                 data = createMapping();
                 fs.writeFile(file.filePath.toString(),
@@ -451,17 +451,12 @@ function saveFile(event) {
 
 function loadFile(event) {
 
-    
     const options = {
-
         title: "Open mapping file",
-
         //Placeholder 2
         defaultPath: `${__dirname}/../mapping.json`,
-
         //Placeholder 4
         buttonLabel: "Open Mapping File",
-
         //Placeholder 3
         filters: [
             { name: 'Mapping json', extensions: ['json'] },

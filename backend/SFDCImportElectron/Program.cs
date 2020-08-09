@@ -131,16 +131,14 @@ namespace SFDCImportElectron
 
             connection.On<string, string>("parse", mapping =>
             {
-               SFDC.SetMapping(mapping, parser.Header);
-               parser.Parse();
+                SFDC.SetMapping(mapping, parser.Header);
+                parser.Parse();
 
-               return "{\"x\":" + Salesforce.Salesforce.BatchSize + "}";
+                return "{\"x\":" + Salesforce.Salesforce.BatchSize + "}";
             });
 
             connection.On<string>("getStatus", () =>
             {
-
-
                 bool ready = parser.IsReady();
 
                 Dictionary<string, string> response = new Dictionary<string, string>();
@@ -156,6 +154,13 @@ namespace SFDCImportElectron
                 response.Add("processed", parser.Processed.ToString());
 
                 return serializer.Serialize(response);
+            });
+
+            connection.On<string>("saveLogs", () => {
+
+                Logger.Save();
+
+                return "{}";
             });
 
             // wait for incoming requests

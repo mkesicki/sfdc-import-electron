@@ -16,5 +16,4 @@ TODOs:
 - Restart / take steps back in GUI
 - Add some menu
 - As always error handling
-
-- Add log message when logs are saved
+- Asyncsfdx force:auth:web:login logs saving? 
