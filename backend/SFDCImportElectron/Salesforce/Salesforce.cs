@@ -39,6 +39,10 @@ namespace SFDCImportElectron.Salesforce
             clone.ParentObject = this.ParentObject;
             clone.Mapping = this.Mapping;
 
+            clone.Token = this.Token;
+            clone.InstanceUrl = this.InstanceUrl;
+            clone.Client = new RestClient(InstanceUrl);
+
             return clone;
         }
 
@@ -53,7 +57,6 @@ namespace SFDCImportElectron.Salesforce
             this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
 
             Meta = new Dictionary<String, Metadata>();
-            Login();
         }
 
         public void Login()
