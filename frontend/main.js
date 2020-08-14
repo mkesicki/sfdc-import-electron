@@ -2,7 +2,7 @@
 // Modules to control application life and create native browser window
 
 
-const { app, BrowserWindow, systemPreferences } = require('electron')
+const { app, BrowserWindow, systemPreferences, Menu, nativeTheme} = require('electron')
 const path = require("path");
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -21,16 +21,14 @@ function createWindow() {
             nodeIntegration: true,
             preload: path.join(__dirname, "preload.js") // use a preload script
         },
-        
-    })
+    });
 
     // and load the index.html of the app.
-    let data = { "darkMode": systemPreferences.isDarkMode() }
+    let data = { "darkMode": nativeTheme.shouldUseDarkColors }
     mainWindow.loadFile('frontend/index.html', { query: { "data": JSON.stringify(data) } })
-    mainWindow.webContents.openDevTools()
 
-    // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
+    const mainMenu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(mainMenu);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -63,5 +61,49 @@ app.on('activate', function () {
     }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+function showAboutWindow() {
+    addWindow = new BrowserWindow({
+        width: 300,
+        height: 200,
+        title: 'About',
+        autoHideMenuBar: true
+    });
+    addWindow.loadURL(`file://${__dirname}/about.html`);
+    addWindow.on('closed', () => addWindow = null);
+}
+
+const menuTemplate = [
+    {
+        label: 'File',
+        submenu: [
+            { role: 'quit' },    
+        ]
+    },
+    {
+        label: 'Help',
+        submenu: [
+
+            {
+                label: 'About',
+                accelerator: process.platform === 'darwin' ? 'Command+F1' : 'Ctrl+F1',
+                click() {
+                    showAboutWindow();
+                }
+            }
+        ]
+    }
+];
+
+if (process.platform === 'darwin') {
+    menuTemplate.unshift({});
+}
+
+if (process.env.NODE_ENV !== 'production') {
+    menuTemplate.push({
+        label: 'View',
+        submenu: [
+            { role: 'reload' },
+            { role: 'toggleDevTools' },
+        ]
+    });
+}

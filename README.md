@@ -12,7 +12,6 @@ TODOs:
 - Think about better handling salesforce limit for concurrent request
 - Figure out wrong counting of success and errors rows
 - Restart / take steps back in GUI
-- Add some menu
 - As always error handling
 - Async logs saving?
 
