@@ -508,4 +508,3 @@ function parseFromFile(fileContent) {
         targetElement.innerHTML = html;
     });
 }
-
