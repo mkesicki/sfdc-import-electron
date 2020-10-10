@@ -1,19 +1,17 @@
-// JavaScript source code
-// Modules to control application life and create native browser window
-
-
-const { app, BrowserWindow, systemPreferences, Menu, nativeTheme} = require('electron')
+const { app, BrowserWindow, systemPreferences, Menu, nativeTheme } = require('electron')
 const path = require("path");
+const querystring = require('querystring');
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow, loginWindow
+
+
+
+global.data = null;
 
 
 function createWindow() {
-
-    console.log(`${__dirname}/app.js`);
-    // Create the browser window.
+    
+    //Create the browser window.
     mainWindow = new BrowserWindow({
         minWidth: 1024,
         minHeight: 768,
@@ -23,20 +21,50 @@ function createWindow() {
         },
     });
 
+    loginWindow = new BrowserWindow({
+        minWidth: 800,
+        minHeight: 600,
+        webPreferences: {
+            nodeIntegration: true,
+            preload: path.join(__dirname, "preload.js") // use a preload script
+        },
+        parent: mainWindow,
+        modal: true,
+        show: true,
+        autoHideMenuBar: true
+    });
+
     // and load the index.html of the app.
     let data = { "darkMode": nativeTheme.shouldUseDarkColors }
     mainWindow.loadFile('frontend/index.html', { query: { "data": JSON.stringify(data) } })
+    loginWindow.loadFile('frontend/indexLogin.html', { query: { "data": JSON.stringify(data) } })
 
     const mainMenu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(mainMenu);
 
     // Emitted when the window is closed.
-    mainWindow.on('closed', function () {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
+    mainWindow.on('closed', function () {      
         mainWindow = null
+        loginWindow = null
     })
+
+    loginWindow.webContents.on('will-navigate', function (event, newUrl) {
+
+        if (newUrl.includes("localhost/callback") && !newUrl.includes("client_id")) {
+
+            const data = querystring.parse(newUrl)
+
+            var pattern = /access_token=(.+)&instance/;
+            var result = decodeURIComponent(newUrl).match(pattern)
+
+            token = result[1]
+            data.token = token
+            console.log(data)
+            global.data = data;
+            loginWindow.close()
+            loginWindow = null          
+        }        
+    });
 }
 
 // This method will be called when Electron has finished
@@ -46,6 +74,7 @@ app.on('ready', createWindow)
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
+
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {

@@ -4,6 +4,7 @@ This is just a fun project to check how to work with Electron.
 The idea behind is to create GUI for https://github.com/mkesicki/sfdc-import
 Do not use it on production :)
 If you see any login data in code there are for trailhead ...
+Connected application in salesforce need to be created (you need client_id, client_secret)
 
 TODOs:
 - Add Drag & Drop for file
@@ -14,5 +15,3 @@ TODOs:
 - Restart / take steps back in GUI
 - As always error handling
 - Async logs saving?
-
-- Correct OAuth login

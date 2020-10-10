@@ -59,6 +59,16 @@ namespace SFDCImportElectron.Salesforce
             Meta = new Dictionary<String, Metadata>();
         }
 
+        public Salesforce(String token, String instanceUrl, ILoggerInterface Logger)
+        {
+            Token = "Bearer " + token;
+            InstanceUrl = instanceUrl;
+            Client = new RestClient(InstanceUrl);               
+            this.Logger = Logger;
+            this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
+            Meta = new Dictionary<String, Metadata>();
+        }
+
         public void Login()
         {
             Client = new RestClient(LoginUrl);
@@ -85,7 +95,7 @@ namespace SFDCImportElectron.Salesforce
             }
 
             throw new AuthenticationException("Login error! Check provided login data.");
-        }
+        }       
 
         public void RetrieveMetadata(String ObjectName)
         {
