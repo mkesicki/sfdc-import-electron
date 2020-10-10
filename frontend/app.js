@@ -330,9 +330,6 @@ function initialize() {
     data[1] = settings.instance_url
     data[2] = file_to_parse;
 
-    console.log(data)
-    console.log(settings)
-
     connection.send("initialize", JSON.stringify(data), (err, response) => {
 
         if (err) logError("Something very bad happen!", err);
@@ -348,7 +345,7 @@ function initialize() {
 
             if (err) logError("Something very bad happen!", err);
             let sfdcObjects = response;
-            console.log(sfdcObjects);
+            //console.log(sfdcObjects);
             log("List of objects retrieved...");
             loadList(sfdcObjects);
         });
