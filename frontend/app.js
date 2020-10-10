@@ -1,19 +1,19 @@
 const electron = window.electron;
-const { ConnectionBuilder } = require('electron-cgi');
+const { remote, ipcRenderer } = electron
+
 const fs = require('fs');
 const UI = require('lockui');
-const { remote } = electron
-const dialog = remote.dialog;
-const WIN = remote.getCurrentWindow();
-
-var connection = new ConnectionBuilder()
+const { ConnectionBuilder } = require('electron-cgi');
+const connection = new ConnectionBuilder()
     .connectTo("dotnet", "run", "--project", "backend/SFDCImportElectron")
     .build();
 
 connection.onDisconnect = () => {
-
     console.log("lost");
 };
+
+const dialog = remote.dialog;
+const WIN = remote.getCurrentWindow();
 
 function log(message) {
     logArea = document.getElementById("log-messages");
@@ -298,7 +298,7 @@ function loadList(sfdcObjects) {
 }
 
 
-function initialize() {
+function initialize(settings) {
 
     let form = document.getElementById("main-form");
     if (form.checkValidity() === false) {
@@ -323,8 +323,6 @@ function initialize() {
 
     let file_to_parse = document.getElementById("file_to_parse").files[0].name;
     let data = [];
-
-    settings = remote.getGlobal('data')
 
     data[0] = settings.token
     data[1] = settings.instance_url

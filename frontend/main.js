@@ -1,13 +1,8 @@
-const { app, BrowserWindow, systemPreferences, Menu, nativeTheme } = require('electron')
+const { app, BrowserWindow, Menu, nativeTheme } = require('electron')
 const path = require("path");
 const querystring = require('querystring');
 
 let mainWindow, loginWindow
-
-
-
-global.data = null;
-
 
 function createWindow() {
     
@@ -17,7 +12,8 @@ function createWindow() {
         minHeight: 768,
         webPreferences: {
             nodeIntegration: true,
-            preload: path.join(__dirname, "preload.js") // use a preload script
+            preload: path.join(__dirname, "preload.js"),
+            enableRemoteModule: true
         },
     });
 
@@ -60,9 +56,12 @@ function createWindow() {
             token = result[1]
             data.token = token
             console.log(data)
-            global.data = data;
+
+           mainWindow.webContents.send('action-user-logged', data);
+
             loginWindow.close()
-            loginWindow = null          
+            loginWindow = null
+            
         }        
     });
 }

@@ -39,10 +39,16 @@
     </div>
     <script src="app.js"></script>
     <script>
+        let settings;
         log("Welcome, let's rock together!");
         document.getElementById("btn-main").addEventListener("click", function () {
-            initialize();
+            initialize(settings);
         })
+
+        ipcRenderer.on('action-user-logged', (event, arg) => {
+            settings = arg
+        })
+       
     </script>
 </body>
 </html>
