@@ -25,7 +25,7 @@ namespace SFDCImportElectron
         static String csv { get; set; }
 
         static void Main()
-        {          
+        {
             serializer = new RestSharp.Serialization.Json.JsonSerializer();
 
             var connection = new ConnectionBuilder()
@@ -61,20 +61,7 @@ namespace SFDCImportElectron
                 csv = args[5];
 
                 //create necessary directories
-                if (!Directory.Exists("results"))
-                {
-                    Directory.CreateDirectory("results");
-                }
-
-                if (!Directory.Exists("tmp"))
-                {
-                    Directory.CreateDirectory("tmp");
-                }
-
-                if (!Directory.Exists("logs"))
-                {
-                    Directory.CreateDirectory("logs");
-                }
+                SetupDirs();
 
                 if (!File.Exists(csv))
                 {
@@ -86,8 +73,43 @@ namespace SFDCImportElectron
                 SFDC = new Salesforce.Salesforce(ClientID, ClientSecret, Username, Password, LoginUrl, Logger);
                 SFDC.Login();
 
-
                 parser = new CSVThread(csv, Logger, SFDC);
+
+                return $"Logged to salesforce instance: {SFDC.InstanceUrl}";
+            });
+
+            connection.On<string, string>("initialize", data =>
+            {
+                /**
+                 * token
+                 * instance_url 
+                 * file_path 
+                 **/
+
+                string[] args = JsonConvert.DeserializeObject<string[]>(data);
+
+                //check number of arguments passed to applicaiton
+                if (args.Length < 3)
+                {
+                    throw new ArgumentException("Caramba, not enough parameters");
+                }
+
+                String Token = args[0];
+                String InstanceUrl = args[1];
+                String CSV = args[2];
+
+                if (!File.Exists(CSV))
+                {
+                    throw new FileNotFoundException("The file was not found!", CSV);
+                }
+
+                SetupDirs();
+
+                Logger = new FileLogger("logs");
+
+                SFDC = new Salesforce.Salesforce(Token, InstanceUrl, Logger);
+
+                parser = new CSVThread(CSV, Logger, SFDC);
 
                 return $"Logged to salesforce instance: {SFDC.InstanceUrl}";
             });
@@ -99,12 +121,9 @@ namespace SFDCImportElectron
                 return serializer.Serialize(sobjects);
             });
 
-
             connection.On<string>("getHeaderRow", () =>
             {
-
                 return serializer.Serialize(parser.Header.Values.ToList());
-
             });
 
             connection.On<string, string>("getMetadata", fields =>
@@ -149,7 +168,8 @@ namespace SFDCImportElectron
                 return serializer.Serialize(response);
             });
 
-            connection.On<string>("saveLogs", () => {
+            connection.On<string>("saveLogs", () =>
+            {
 
                 Logger.Save();
 
@@ -174,6 +194,25 @@ namespace SFDCImportElectron
                 "--login_url - saleforce login instance url \n" +
                 "--path - path to CSV file \n"
              );
+        }
+
+        private static void SetupDirs()
+        {
+            //create necessary directories
+            if (!Directory.Exists("results"))
+            {
+                Directory.CreateDirectory("results");
+            }
+
+            if (!Directory.Exists("tmp"))
+            {
+                Directory.CreateDirectory("tmp");
+            }
+
+            if (!Directory.Exists("logs"))
+            {
+                Directory.CreateDirectory("logs");
+            }
         }
     }
 }

@@ -298,10 +298,9 @@ function loadList(sfdcObjects) {
 }
 
 
-function login() {
+function initialize() {
 
-
-    let form = document.getElementById("login-form");
+    let form = document.getElementById("main-form");
     if (form.checkValidity() === false) {
 
         for (var i = 0; i < form.elements.length; i++) {
@@ -318,27 +317,20 @@ function login() {
         return;
     }
 
-    log("Login to salesforce...")
+    log("Initialize salesforce...")
 
-    spinnerOn();
+    spinnerOn();    
 
-    let username = document.getElementById("username").value;
-    let password = document.getElementById("password").value;
-    let client_id = document.getElementById("client_id").value;
-    let client_secret = document.getElementById("client_secret").value;
-    let login_url = document.getElementById("login_url").value;
     let file_to_parse = document.getElementById("file_to_parse").files[0].name;
     let data = [];
 
-    data[0] = username;
-    data[1] = password;
-    data[2] = client_id;
-    data[3] = client_secret;
-    data[4] = login_url;
-    data[5] = file_to_parse;
+    settings = remote.getGlobal('data')
 
-    //let username = document.getElementById("username").value;
-    connection.send("login", JSON.stringify(data), (err, response) => {
+    data[0] = settings.token
+    data[1] = settings.instance_url
+    data[2] = file_to_parse;
+
+    connection.send("initialize", JSON.stringify(data), (err, response) => {
 
         if (err) logError("Something very bad happen!", err);
 

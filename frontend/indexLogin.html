@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login to Salesforce</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script>
+        const querystring = require('querystring');
+        let query = querystring.parse(global.location.search);
+        let data = JSON.parse(query['?data'])
+        let styleFile;
+        if (data.darkMode) {
+            styleFile = "dark.css";
+        } else {
+            styleFile = "light.css";
+        }
+        var element = document.createElement("link");
+        element.setAttribute("rel", "stylesheet");
+        element.setAttribute("type", "text/css");
+        element.setAttribute("href", styleFile);
+        document.getElementsByTagName("head")[0].appendChild(element);
+    </script>
+</head>
+<body>
+    <div id="spinner" class="hide"></div>
+    <div id="main-container">
+        <div id="login-form-container">
+            <div class="title">Login to Salesforce</div>
+            <form id="login-form">
+                <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
+                <div>
+                    <label>
+                        Login to:
+                        <select id="login_url" name="org" required>
+                            <option value="" selected>--Select--</option>
+                            <option value="https://test.login.salesforce.com">Sandbox</option>
+                            <option value="https://login.salesforce.com">Production</option>
+                        </select>
+                    </label>
+                </div>
+                <div><input type="button" value="Login" id="btn-login" /></div>
+            </form>
+
+        </div>
+    </div>
+
+    <div id="log">
+        <textarea id="log-messages" readonly></textarea>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        document.getElementById("btn-login").addEventListener("click", function () {
+
+            let client_id = document.getElementById("client_id").value;
+            let login_url = document.getElementById("login_url").value;
+
+            const redirect_url = "http://localhost/callback"
+            const url = login_url + `/services/oauth2/authorize?response_type=token&redirect_uri=${redirect_url}&display=popup&client_id=` + client_id
+
+            window.location = url
+        })
+    </script>
+</body>
+</html>

@@ -59,6 +59,16 @@ namespace SFDCImportElectron.Salesforce
             Meta = new Dictionary<String, Metadata>();
         }
 
+        public Salesforce(String token, String instanceUrl, ILoggerInterface Logger)
+        {
+            Token = "Bearer " + token;
+            InstanceUrl = instanceUrl;
+            Client = new RestClient(InstanceUrl);
+            this.Logger = Logger;
+            this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
+            Meta = new Dictionary<String, Metadata>();
+        }
+
         public void Login()
         {
             Client = new RestClient(LoginUrl);
@@ -129,7 +139,7 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public int SetMapping (String jsonBody, Dictionary<int, string> Header)
+        public int SetMapping(String jsonBody, Dictionary<int, string> Header)
         {
             MappingPayload tmp = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
             ParentObject = tmp.parent;

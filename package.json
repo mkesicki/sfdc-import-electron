@@ -5,7 +5,8 @@
   "main": "frontend/main.js",
   "scripts": {
     "test": "test",
-    "start": "electron ."
+    "start": "electron .",
+    "watch": "nodemon --exec electron ."
   },
   "repository": {
     "type": "git",

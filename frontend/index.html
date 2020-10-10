@@ -25,28 +25,12 @@
 <body>
     <div id="spinner" class="hide"></div>
     <div id="main-container">
-        <div id="login-form-container">
-            <div id="login-form-container">
-                <div class="title">Login to Salesforce</div>
-                <form id="login-form">
-                    <div><label>Username: <input id="username" name="username" required /></label></div>
-                    <div><label>Password: <input id="password" name="password" type="password" required /></label></div>
-                    <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
-                    <div><label>Client Secret: <input id="client_secret" name="client_secret" type="password" required /></label></div>
-                    <div>
-                        <label>
-                            Login to:
-                            <select id="login_url" name="org" required>
-                                <option value="">--Select--</option>
-                                <option value="https://test.login.salesforce.com">Sandbox</option>
-                                <option value="https://login.salesforce.com" selected>Production</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required /></label></div>
-                    <div><input type="button" value="Login" id="btn-login" /></div>
-                </form>
-            </div>
+        <div id="main-form-container">
+            <div class="title">Login to Salesforce</div>
+            <form id="main-form">                    
+                <div><label>File: <input id="file_to_parse" type="file" name="file_to_parse" required /></label></div>
+                <div><input type="button" value="Initiate parsing" id="btn-main" /></div>
+            </form>
         </div>
     </div>
 
@@ -56,8 +40,8 @@
     <script src="app.js"></script>
     <script>
         log("Welcome, let's rock together!");
-        document.getElementById("btn-login").addEventListener("click", function () {
-            login();
+        document.getElementById("btn-main").addEventListener("click", function () {
+            initialize();
         })
     </script>
 </body>
