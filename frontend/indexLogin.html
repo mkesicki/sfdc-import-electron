@@ -27,14 +27,14 @@
         <div id="login-form-container">
             <div class="title">Login to Salesforce</div>
             <form id="login-form">
-                <div><label>Client Id: <input id="client_id" name="client_id" required value="3MVG91BJr_0ZDQ4tOAfzh.FvRVMjEdoK2rESiJ_ZFQtjuO3CnQyIT1m3U5TTh18JzZXzuCwDRVAJx5Ato8GVh"/></label></div>
+                <div><label>Client Id: <input id="client_id" name="client_id" required /></label></div>
                 <div>
                     <label>
                         Login to:
                         <select id="login_url" name="org" required>
-                            <option value="">--Select--</option>
+                            <option value="" selected>--Select--</option>
                             <option value="https://test.login.salesforce.com">Sandbox</option>
-                            <option value="https://login.salesforce.com" selected>Production</option>
+                            <option value="https://login.salesforce.com">Production</option>
                         </select>
                     </label>
                 </div>
