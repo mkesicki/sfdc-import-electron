@@ -25,6 +25,6 @@ namespace SFDCImportElectron.Model
             }
 
             throw new ArgumentException("Field: " + key + " was not found in selected mapping");
-        }  
+        }
     }
 }

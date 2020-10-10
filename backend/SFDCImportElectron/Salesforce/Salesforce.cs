@@ -63,7 +63,7 @@ namespace SFDCImportElectron.Salesforce
         {
             Token = "Bearer " + token;
             InstanceUrl = instanceUrl;
-            Client = new RestClient(InstanceUrl);               
+            Client = new RestClient(InstanceUrl);
             this.Logger = Logger;
             this.Mapping = new Dictionary<int, MappingPayload.Mapping>();
             Meta = new Dictionary<String, Metadata>();
@@ -95,7 +95,7 @@ namespace SFDCImportElectron.Salesforce
             }
 
             throw new AuthenticationException("Login error! Check provided login data.");
-        }       
+        }
 
         public void RetrieveMetadata(String ObjectName)
         {
@@ -139,7 +139,7 @@ namespace SFDCImportElectron.Salesforce
             return objects;
         }
 
-        public int SetMapping (String jsonBody, Dictionary<int, string> Header)
+        public int SetMapping(String jsonBody, Dictionary<int, string> Header)
         {
             MappingPayload tmp = JsonConvert.DeserializeObject<MappingPayload>(jsonBody);
             ParentObject = tmp.parent;

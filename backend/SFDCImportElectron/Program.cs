@@ -25,7 +25,7 @@ namespace SFDCImportElectron
         static String csv { get; set; }
 
         static void Main()
-        {          
+        {
             serializer = new RestSharp.Serialization.Json.JsonSerializer();
 
             var connection = new ConnectionBuilder()
@@ -103,7 +103,7 @@ namespace SFDCImportElectron
                     throw new FileNotFoundException("The file was not found!", CSV);
                 }
 
-                SetupDirs();                                          
+                SetupDirs();
 
                 Logger = new FileLogger("logs");
 
@@ -168,7 +168,8 @@ namespace SFDCImportElectron
                 return serializer.Serialize(response);
             });
 
-            connection.On<string>("saveLogs", () => {
+            connection.On<string>("saveLogs", () =>
+            {
 
                 Logger.Save();
 
@@ -195,7 +196,8 @@ namespace SFDCImportElectron
              );
         }
 
-        private static void SetupDirs() {
+        private static void SetupDirs()
+        {
             //create necessary directories
             if (!Directory.Exists("results"))
             {
